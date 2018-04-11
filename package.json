@@ -1,0 +1,47 @@
+{
+  "name": "can-bind",
+  "version": "0.0.0",
+  "description": "Bind different CanJS observables together.",
+  "homepage": "https://canjs.com/doc/can-bind.html",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/canjs/can-bind.git"
+  },
+  "author": {
+    "name": "Bitovi",
+    "email": "core@donejs.com",
+    "url": "https://canjs.com/"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "jshint": "jshint ./*.js --config",
+    "test": "npm run jshint && npm run testee",
+    "testee": "testee test/test.html --browsers firefox",
+    "preversion": "npm test && npm run build",
+    "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
+    "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
+    "release:major": "npm version major && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:patch": "npm version patch && npm publish"
+  },
+  "main": "can-bind",
+  "steal": {
+    "main": "can-bind",
+    "configDependencies": [
+      "live-reload"
+    ],
+    "npmIgnore": [
+      "steal-tools",
+      "testee"
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jshint": "^2.9.1",
+    "steal": "^1.6.5",
+    "steal-qunit": "^1.0.1",
+    "steal-tools": "^1.11.3",
+    "testee": "^0.7.0"
+  },
+  "license": "MIT"
+}

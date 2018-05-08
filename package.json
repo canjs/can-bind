@@ -35,8 +35,15 @@
       "testee"
     ]
   },
-  "dependencies": {},
+  "dependencies": {
+    "can-queues": "^1.0.0",
+    "can-reflect": "^1.15.0",
+    "can-reflect-dependencies": "^1.0.0",
+    "can-symbol": "^1.6.0"
+  },
   "devDependencies": {
+    "can-observation": "^4.0.1",
+    "can-simple-observable": "^2.0.4",
     "jshint": "^2.9.1",
     "steal": "^1.6.5",
     "steal-qunit": "^1.0.1",

@@ -1,7 +1,8 @@
 @function can-bind.prototype.start start
 @parent can-bind.prototype
-@description Start listening to the observables and set their values depending
-on their current state and the options provided to the binding when initialized.
+@description Start listening to the child & parent observables and set their
+values depending on their current state and the options provided to the binding
+when initialized.
 @signature `binding.start()`
 
 @body
@@ -12,11 +13,12 @@ This method turns on both the child and parent observable listeners by calling
 Additionally, it tries to sync the values of the child and parent observables,
 depending on:
 
-1. Whether child or parent is `undefined`.
+1. Whether the child or parent is equal to `undefined`.
 2. The values of the `onInitDoNotUpdateChild` and `onInitSetUndefinedParentIfChildIsDefined` options.
 3. If it’s a one-way or two-way binding.
 
-By default, the initialization works as diagrammed below:
+By default, the initialization works as diagrammed below
+(with `onInitDoNotUpdateChild=false` and `onInitSetUndefinedParentIfChildIsDefined=true`):
 
 ```
 Child start value      Parent start value     Child end value  Parent end value  API call
@@ -40,22 +42,24 @@ child=undefined   <-   parent=undefined   =>  child=undefined  parent=undefined 
 child=3           <-   parent=3           =>  child=3          parent=3          updateChild(3)
 ```
 
-By default, one-way bindings initialize however the binding is set up: with
-one-way parent-to-child, the parent always sets the child; likewise, one-way
-child-to-parent always sets the parent’s value to the child’s value. This is
-true even when one of them is `undefined` and/or if they’re already the same
-value.
+To summarize the diagram above: by default, one-way bindings initialize however
+the binding is set up. With one-way parent-to-child bindings, the parent always
+sets the child; likewise, one-way child-to-parent bindings always set the
+parent’s value to the child’s value. This is true even when one of them is
+`undefined` and/or if they’re already the same value.
 
-With two-way bindings, the logic is a little different: if one of the values is
-`undefined`, it will be initialized with the value from the other. If they
-conflict, the child’s value will be set to match the parent.
+With two-way bindings, the logic is a little different: if one of the observable
+values is `undefined`, it will be set to the value of the other observable. If
+the child & parent conflict, the child’s value will be set to match the parent.
 
 The `onInitDoNotUpdateChild` option can change how initialization works. This
 option’s value is `false` by default, but if it’s set to `true`, then the child
-will _never_ be set when the binding is initialized. This option has no effect
-one-way child-to-parent bindings because the child’s value is never set.
+will _never_ be set when the binding is initialized. This option does not effect
+one-way child-to-parent bindings because the child’s value is never set when
+that type of binding is initialized.
 
-The diagram above looks like the following with this option:
+Below is the same diagram as above, except with the options
+`onInitDoNotUpdateChild=true` and `onInitSetUndefinedParentIfChildIsDefined=true`:
 
 ```
 Δ Child start value     Parent start value     Child end value  Parent end value  API call

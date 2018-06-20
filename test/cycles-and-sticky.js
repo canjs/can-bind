@@ -22,7 +22,6 @@ QUnit.test("two-way binding with childSticksToParent", function(assert) {
 	var binding = new Bind({
 		child: child,
 		parent: parent,
-		queue: "domUI",
 		sticky: "childSticksToParent"
 	});
 
@@ -58,7 +57,6 @@ function cycleStickyTest(options) {
 		cycles: cycles,
 		onInitDoNotUpdateChild: true,
 		parent: parent,
-		queue: "domUI",
 		sticky: sticky
 	});
 

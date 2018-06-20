@@ -84,12 +84,15 @@ function Bind(options) {
 	if (options.parent === undefined) {
 		throw new TypeError("You must supply a parent");
 	}
-	if (options.queue === undefined) {
-		throw new TypeError("You must supply a queue (such as notify, derive, or domUI)");
-	} else if (["notify", "derive", "domUI"].indexOf(options.queue) === -1) {
+	if (options.queue && ["notify", "derive", "domUI"].indexOf(options.queue) === -1) {
 		throw new RangeError("Invalid queue; must be one of notify, derive, or domUI");
 	}
 	//!steal-remove-end
+
+	// queue; by default, domUI
+	if (options.queue === undefined) {
+		options.queue = "domUI";
+	}
 
 	// cycles: when an observable is set in a two-way binding, it can update the
 	// other bound observable, which can then update the original observable the

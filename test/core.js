@@ -19,8 +19,7 @@ QUnit.test("one-way binding to child", function(assert) {
 	var child = new SimpleObservable(0);
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// Turn on the listeners
@@ -32,7 +31,7 @@ QUnit.test("one-way binding to child", function(assert) {
 
 	// Set the child observable’s value and the parent should not update
 	child.set(22);
-	assert.equal(canReflect.getValue(parent), 15, 'parent does not update');
+	assert.equal(canReflect.getValue(parent), 15, "parent does not update");
 
 	// Turn off the listeners
 	binding.stop();
@@ -40,6 +39,73 @@ QUnit.test("one-way binding to child", function(assert) {
 	// Setting the parent’s value should no longer update the child
 	parentValue.set(45);
 	assert.equal(canReflect.getValue(child), 22, "parent listener correctly turned off");
+});
+
+canTestHelpers.dev.devOnlyTest("one-way binding to child - dependency data", function(assert) {
+	var parentValue = new SimpleObservable(0);
+	var parent = new Observation(function() {
+		return parentValue.get();
+	});
+	var child = new SimpleObservable(0);
+	var binding = new Bind({
+		child: child,
+		parent: parent
+	});
+
+	// Turn on the listeners
+	binding.start();
+
+	// Child dependency/mutation data
+	var childDepData = canReflectDeps.getDependencyDataOf(child);
+	assert.deepEqual(
+		childDepData,
+		{
+			whatChangesMe: {
+				mutate: {
+					valueDependencies: new Set([parent])
+				}
+			}
+		},
+		"child observable has the correct mutation dependencies"
+	);
+
+	// Parent dependency/mutation data
+	var parentDepData = canReflectDeps.getDependencyDataOf(parent);
+	assert.deepEqual(
+		parentDepData,
+		{
+			whatChangesMe: {
+				derive: {
+					valueDependencies: new Set([parentValue])
+				}
+			},
+			whatIChange: {
+				mutate: {
+					valueDependencies: new Set([child])
+				}
+			}
+		},
+		"parent observable has the correct mutation dependencies"
+	);
+
+	// Turn off the listeners
+	binding.stop();
+
+	// Child dependency/mutation data
+	childDepData = canReflectDeps.getDependencyDataOf(child);
+	assert.equal(
+		childDepData,
+		undefined,
+		"child observable has no mutation dependencies after stop()"
+	);
+
+	// Parent dependency/mutation data
+	parentDepData = canReflectDeps.getDependencyDataOf(parent);
+	assert.equal(
+		parentDepData,
+		undefined,
+		"parent observable has no mutation dependencies after stop()"
+	);
 });
 
 QUnit.test("one-way binding to parent", function(assert) {
@@ -50,8 +116,7 @@ QUnit.test("one-way binding to parent", function(assert) {
 	});
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// Turn on the listeners
@@ -73,13 +138,79 @@ QUnit.test("one-way binding to parent", function(assert) {
 	assert.equal(canReflect.getValue(parent), 22, "child listener correctly turned off");
 });
 
+canTestHelpers.dev.devOnlyTest("one-way binding to parent - dependency data", function(assert) {
+	var parent = new SimpleObservable(0);
+	var childValue = new SimpleObservable(0);
+	var child = new Observation(function() {
+		return childValue.get();
+	});
+	var binding = new Bind({
+		child: child,
+		parent: parent
+	});
+
+	// Turn on the listeners
+	binding.start();
+
+	// Child dependency/mutation data
+	var childDepData = canReflectDeps.getDependencyDataOf(child);
+	assert.deepEqual(
+		childDepData,
+		{
+			whatChangesMe: {
+				derive: {
+					valueDependencies: new Set([childValue])
+				}
+			},
+			whatIChange: {
+				mutate: {
+					valueDependencies: new Set([parent])
+				}
+			}
+		},
+		"child observable has the correct mutation dependencies"
+	);
+
+	// Parent dependency/mutation data
+	var parentDepData = canReflectDeps.getDependencyDataOf(parent);
+	assert.deepEqual(
+		parentDepData,
+		{
+			whatChangesMe: {
+				mutate: {
+					valueDependencies: new Set([child])
+				}
+			}
+		},
+		"parent observable has the correct mutation dependencies"
+	);
+
+	// Turn off the listeners
+	binding.stop();
+
+	// Child dependency/mutation data
+	childDepData = canReflectDeps.getDependencyDataOf(child);
+	assert.equal(
+		childDepData,
+		undefined,
+		"child observable has no mutation dependencies after stop()"
+	);
+
+	// Parent dependency/mutation data
+	parentDepData = canReflectDeps.getDependencyDataOf(parent);
+	assert.equal(
+		parentDepData,
+		undefined,
+		"parent observable has no mutation dependencies after stop()"
+	);
+});
+
 QUnit.test("basic two-way binding", function(assert) {
 	var parent = new SimpleObservable(0);
 	var child = new SimpleObservable(0);
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// Turn on the listeners
@@ -114,8 +245,7 @@ canTestHelpers.dev.devOnlyTest("basic two-way binding - dependency data", functi
 	var child = new SimpleObservable(0);
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// Turn on the listeners
@@ -167,7 +297,7 @@ canTestHelpers.dev.devOnlyTest("basic two-way binding - dependency data", functi
 	assert.equal(
 		childDepData,
 		undefined,
-		"child observable has no mutation dependencies after off()"
+		"child observable has no mutation dependencies after stop()"
 	);
 
 	// Parent dependency/mutation data
@@ -175,7 +305,7 @@ canTestHelpers.dev.devOnlyTest("basic two-way binding - dependency data", functi
 	assert.equal(
 		parentDepData,
 		undefined,
-		"parent observable has no mutation dependencies after off()"
+		"parent observable has no mutation dependencies after stop()"
 	);
 });
 
@@ -185,7 +315,6 @@ canTestHelpers.dev.devOnlyTest("updateChildName and updateParentName options", f
 	var binding = new Bind({
 		child: child,
 		parent: parent,
-		queue: "domUI",
 		updateChildName: "custom child name",
 		updateParentName: "custom parent name"
 	});
@@ -202,7 +331,6 @@ QUnit.test("two-way binding with both values undefined", function(assert) {
 	var binding = new Bind({
 		child: child,
 		parent: parent,
-		queue: "domUI",
 		setChild: function() {
 			setChildWasCalled = true;
 		}
@@ -223,8 +351,7 @@ QUnit.test("two-way binding updates are ignored after calling stop()", function(
 	var parent = new SimpleObservable(15);
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// When the parent changes, turn the binding off
@@ -251,8 +378,7 @@ QUnit.test("parentValue property", function(assert) {
 	var binding = new Bind({
 		child: child,
 		parent: parent,
-		priority: 15,
-		queue: "domUI"
+		priority: 15
 	});
 
 	assert.equal(binding.parentValue, 15, "can get parentValue");
@@ -265,8 +391,7 @@ QUnit.test("priority option", function(assert) {
 	new Bind({
 		child: child,
 		parent: parent,
-		priority: 15,
-		queue: "domUI"
+		priority: 15
 	});
 
 	assert.equal(canReflect.getPriority(child), 15, "child priority set");
@@ -285,7 +410,6 @@ QUnit.test("setChild and setParent options", function(assert) {
 	var binding = new Bind({
 		child: child,
 		parent: parent,
-		queue: "domUI",
 		setChild: function(newValue) {
 			var split = newValue.split("=");
 			var objectValue = {};

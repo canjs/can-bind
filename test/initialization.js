@@ -18,8 +18,7 @@ QUnit.test("undefined child and defined parent with setter", function(assert) {
 
 	var binding = new Bind({
 		child: child,
-		parent: parent,
-		queue: "domUI"
+		parent: parent
 	});
 
 	// When the binding is turned on, the child is set to the parnet’s value
@@ -44,7 +43,6 @@ QUnit.test("undefined parent and null child with setter", function(assert) {
 		child: child,
 		cycles: 0,
 		parent: parent,
-		queue: "domUI",
 		sticky: "childSticksToParent"
 	});
 
@@ -77,8 +75,7 @@ function initializationTest(options) {
 		onInitDoNotUpdateChild: options.onInitDoNotUpdateChild,
 		onInitSetUndefinedParentIfChildIsDefined: options.onInitSetUndefinedParentIfChildIsDefined,
 		parent: parent,
-		parentToChild: options.parentToChild,
-		queue: "domUI"
+		parentToChild: options.parentToChild
 	});
 
 	// Turn on the listeners

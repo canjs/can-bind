@@ -2,31 +2,10 @@
 @package ../package.json
 @parent can-observables
 @collection can-infrastructure
-@description Bind two CanJS observable values together.
+@description Updates one observable value with the value of another observable.
 @group can-bind.prototype prototype
 
 @signature `new Bind(options)`
-
-  @param {Object} options An object with multiple options:
-    - `child`: Required; the child observable.
-    - `childToParent`: Optional boolean; by default, [can-bind] will check if the child has the [can-symbol/symbols/getValue can.getValue symbol] and either `setParent` is provided or the parent has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way parent-to-child).
-    - `cycles`: Optional; defaults to `0`. When an observable’s value is changed in a two-way binding, the number of times it can be changed again as a result of setting the other observable. This can be any number greater than 0 if `sticky` is undefined; otherwise, an error will be thrown if this is provided with `sticky`.
-    - `onInitDoNotUpdateChild`: Optional; defaults to `false`. If `true`, then never set the child when starting a binding.
-    - `onInitSetUndefinedParentIfChildIsDefined`: Optional; defaults to `true`: when the binding is started, if the parent’s value is undefined and the child’s value is defined, then set the parent to the child’s value.
-    - `parent`: Required; the parent observable.
-    - `parentToChild`: Optional boolean; by default, [can-bind] will check if the parent has the [can-symbol/symbols/getValue can.getValue symbol] and either `setChild` is provided or the child has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way child-to-parent).
-    - `priority`: Optional; a number to [can-reflect/setPriority set as the priority] for the child and parent observables.
-    - `queue`: Required; the name of the queue in which to listen for changes. Acceptable values include `"notify"`, `"derive"`, and `"domUI"`.
-    - `setChild`: Optional; a custom function for setting the child observable’s value.
-    - `setParent`: Optional; a custom function for setting the parent observable’s value.
-    - `sticky`: Optional; defaults to `undefined`. Right now `"childSticksToParent"` is the only other allowed value, and it will try to make the child matches the parent’s value after setting the parent.
-    - `updateChildName`: Optional; a debugging name for the function that listens to the parent’s value and updates the child.
-    - `updateParentName`: Optional; a debugging name for the function that listens to the child’s value and updates the parent.
-  @return {can-bind} A new binding instance.
-
-@body
-
-## Overview
 
 [can-bind] is used to keep two observable values in sync with each other. These
 two observable values, the `child` and `parent`, can be tied together by a
@@ -42,24 +21,22 @@ Here’s an example of setting up a two-way binding:
 
 ```js
 import Bind from "can-bind";
-import canValue from "can-value";
 import DefineMap from "can-define/map/map";
+import value from "can-value";
 
 const childMap = new DefineMap({childProp: "original child value"});
 const parentMap = new DefineMap({parentProp: "original parent value"});
 
 const binding = new Bind({
-  child: canValue.bind(bindMap, "inner.key"),
-  parent: canValue.bind(bindMap, "inner.key"),
-  queue: "domUI"
+  child: value.bind(bindMap, "inner.key"),
+  parent: value.bind(bindMap, "inner.key")
 });
 ```
 
 [can-bind] gives you more options to control how the binding works; see the
-signature documentation above for a brief explanation of each option, and read
-further below to learn more about options such as `cycles`,
-`onInitDoNotUpdateChild`, `onInitSetUndefinedParentIfChildIsDefined`, and
-`sticky`.
+documentation below for a brief explanation of each option, and read further
+below to learn more about options such as `cycles`, `onInitDoNotUpdateChild`,
+`onInitSetUndefinedParentIfChildIsDefined`, and `sticky`.
 
 New [can-bind] instances have the following methods:
 
@@ -72,6 +49,125 @@ New [can-bind] instances have the following methods:
 
 The binding instance also has one property, [can-bind.prototype.parentValue],
 which returns the value of the parent observable.
+
+  @param {Object} options An object with multiple options:
+    - **child** `{ObservableValue}`: Required; the child observable.
+    - **childToParent** `{Boolean}`: Optional; by default, [can-bind] will check if the child has the [can-symbol/symbols/getValue can.getValue symbol] and either `setParent` is provided or the parent has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way parent-to-child).
+    - **cycles** `{Number}`: Optional; defaults to `0`. When an observable’s value is changed in a two-way binding, the number of times it can be changed again as a result of setting the other observable. This can be any number greater than 0 if `sticky` is undefined; otherwise, an error will be thrown if this is provided with `sticky`.
+    - **onInitDoNotUpdateChild** `{Boolean}`: Optional; defaults to `false`. If `true`, then never set the child when starting a binding.
+    - **onInitSetUndefinedParentIfChildIsDefined** `{Boolean}`: Optional; defaults to `true`: when the binding is started, if the parent’s value is undefined and the child’s value is defined, then set the parent to the child’s value.
+    - **parent** `{ObservableValue}`: Required; the parent observable.
+    - **parentToChild** `{Boolean}`: Optional; by default, [can-bind] will check if the parent has the [can-symbol/symbols/getValue can.getValue symbol] and either `setChild` is provided or the child has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way child-to-parent).
+    - **priority** `{Number}`: Optional; a number to [can-reflect/setPriority set as the priority] for the child and parent observables.
+    - **queue** `{String}`: Optional (by default, `"domUI"`); the name of the queue in which to listen for changes. Acceptable values include `"notify"`, `"derive"`, and `"domUI"`.
+    - **setChild** `{Function}`: Optional; a custom function for setting the child observable’s value.
+    - **setParent** `{Function}`: Optional; a custom function for setting the parent observable’s value.
+    - **sticky** `{String}`: Optional; defaults to `undefined`. Right now `"childSticksToParent"` is the only other allowed value, and it will try to make the child matches the parent’s value after setting the parent.
+    - **updateChildName** `{String}`: Optional; a debugging name for the function that listens to the parent’s value and updates the child.
+    - **updateParentName** `{String}`: Optional; a debugging name for the function that listens to the child’s value and updates the parent.
+  @return {can-bind} A new binding instance.
+
+@body
+
+## Use
+
+[can-bind] is mostly used as infrastructure for modules like [can-route] and
+[can-stache-bindings], but you might find it useful in your application if you
+need to bind the values of two observables together. Let’s look at an example
+from [can-component]’s documentation:
+
+```js
+import Component from "can-component";
+
+Component.extend({
+  tag: "my-app",
+  ViewModel: {
+    connectedCallback: function() {
+      this.listenTo( "websitesCount", function( event, count ) {
+        this.paginate.count = count;
+      } );
+      return this.stopListening.bind( this );
+    },
+    paginate: {
+      value: function() {
+        return new Paginate( {
+          limit: 5
+        } );
+      }
+    },
+    websitesCount: {
+      get: function( lastValue, setValue ) {
+        this.websitesPromise.then( function( websites ) {
+          setValue( websites.count );
+        } );
+      }
+    },
+    websitesPromise: {
+      get: function() {
+        return Website.getList( {
+          limit: this.paginate.limit,
+          offset: this.paginate.offset
+        } );
+      }
+    }
+  }
+} );
+```
+@highlight 7-10,only
+
+In this example, we [can-event-queue/map/map.listenTo] the `websitesCount`
+property for changes so we can update the `paginate.count` property.
+
+This can be better expressed with [can-bind] and [can-value]:
+
+```js
+import Bind from "can-bind";
+import Component from "can-component";
+import value from "can-value";
+
+Component.extend({
+  tag: "my-app",
+  ViewModel: {
+    connectedCallback: function() {
+      const binding = new Bind({
+        parent: value.from(this, "websitesCount"),
+        child: value.to(this, "paginate.count")
+      });
+      binding.start();
+      return binding.stop;
+    },
+    paginate: {
+      value: function() {
+        return new Paginate( {
+          limit: 5
+        } );
+      }
+    },
+    websitesCount: {
+      get: function( lastValue, setValue ) {
+        this.websitesPromise.then( function( websites ) {
+          setValue( websites.count );
+        } );
+      }
+    },
+    websitesPromise: {
+      get: function() {
+        return Website.getList( {
+          limit: this.paginate.limit,
+          offset: this.paginate.offset
+        } );
+      }
+    }
+  }
+} );
+```
+@highlight 9-14,only
+
+Now [can-value] is used to get the value [can-value.from] `websitesCount` and
+assign it [can-value.to] `paginate.count`. You’ll want to immediately
+[can-bind.prototype.start] the binding and then return the
+[can-bind.prototype.stop] method from [can-component/connectedCallback] so the
+binding is turned off when the component is torn down.
 
 ## Initialization
 
@@ -115,10 +211,7 @@ const parent = new SettableObservable(function(newValue) {
 
 const binding = new Bind({
   child: child,
-  parent: parent,
-  queue: "domUI",
-  updateChildName: "update child",
-  updateParentName: "update parent"
+  parent: parent
 });
 ```
 
@@ -171,7 +264,6 @@ canReflect.assignSymbols(parent, {
 const binding = new Bind({
   child: child,
   parent: parent,
-  queue: "domUI",
   sticky: "childSticksToParent"
 });
 ```
@@ -183,9 +275,109 @@ With the `sticky: "childSticksToParent"` option, [can-bind] will see that the
 child and parent values are not the same, and will set the child to the parent’s
 value (`15`).
 
+## Debugging
+
+### Naming functions
+
+[can-bind] sets up [can-bind.prototype.updateChild] to listen for changes to the
+parent; when it changes, [can-bind] updates the child to match the parent.
+Likewise, [can-bind.prototype.updateParent] listens for changes to the child;
+when it changes, [can-bind] updates the parent to match the child.
+
+If you provide the `updateChildName` and `updateParentName` options, [can-bind]
+will assign those names to their respective update functions so they show up
+better in a debugger. For example, providing `updateChildName` will name
+[can-bind.prototype.updateChild], so if you have a breakpoint when the child is
+set, you can see this name in the debugger.
+
+### Mutation dependency data
+
+[can-bind] automatically sets up the correct [can-reflect-dependencies] mutation
+data for both the child and the parent. For example, when
+[can-bind.prototype.start] is called on a one-way child-to-parent binding,
+[can-bind] will call [can-reflect-dependencies.addMutatedBy] to register the
+child as a mutator of the parent and set the `@@can.getChangesDependencyRecord`
+symbol on [can-bind.prototype.updateParent] to indicate that it mutates the
+parent.
+
+When [can-bind.prototype.stop] is called, [can-bind] tears down the mutation
+dependency data it sets up by calling [can-reflect-dependencies.deleteMutatedBy]
+and removing the `@@can.getChangesDependencyRecord` symbol from the update
+function(s).
+
+## Warnings
+
+### can-bind updateValue: attempting to update
+
+In some circumstances, you might come across a warning like this with a two-way
+binding:
+
+```
+can-bind updateValue: attempting to update parent SettableObservable<> to new value: 3
+…but the parent semaphore is at 0 and the child semaphore is at 1. The number of allowed updates is 0.
+The parent value will remain unchanged; it’s currently: 2
+```
+
+In summary, [can-bind] is trying to warn you that it could not make the child
+and parent values match. This might indicate that there’s a bug in your code.
+
+Let’s look again at the example in the cycles section above:
+
+```js
+import Bind from "can-bind";
+import SettableObservable from "can-simple-observable/settable/settable";
+
+// Child and parent observable values
+const child = new SettableObservable(function(newValue) {
+	return newValue + 1;
+}, null, 0);
+const parent = new SettableObservable(function(newValue) {
+	return newValue + 1;
+}, null, 0);
+
+// Create and start the binding
+const binding = new Bind({
+  child: child,
+  parent: parent
+});
+binding.start();
+
+// Set the parent to 1
+parent.set(1);
+```
+
+In the example above, both the child and parent values will increment themselves
+by 1 every time they’re set. When `parent` is set to 1, it will increment itself
+to 2; [can-bind.prototype.updateChild] listens for when the parent changes and
+will set the child to 2, and it will increment itself to 3. The
+[can-bind.prototype.updateParent] listener will then try to set the `parent` to
+3, but because `cycles` is 0 by default, an infinite loop will be prevented.
+
+[can-bind] will show you a warning in this circumstance. Let’s look at parts of
+the error message again:
+
+> can-bind updateValue: attempting to update parent SettableObservable<> to new value: 3
+
+This is saying that [can-bind] is trying to set the parent’s value to 3
+(because that’s the child’s new value).
+
+> …but the parent semaphore is at 0 and the child semaphore is at 1. The number of allowed updates is 0.
+
+A semaphore is used to keep track of the number of updates to the child and
+parent values within one cycle. This is explained more in the
+[how it works](#Howitworks) section below, but to explain what it means here:
+the child was updated 1 time in response to the parent being changed, but there
+are 0 updates allowed (this number is 2 * `cycles`, which is 0 by default). This
+is how [can-bind] determined that it shouldn’t allow the parent to be set again.
+
+> The parent value will remain unchanged; it’s currently: 2
+
+Since the parent won’t be update to the child’s new value, it will remain at its
+current value (2 in this example).
+
 ## How it works
 
-> **Note:** this section is non-normative and only provided as a reference to
+> **Note:** this section is non-normative and is only provided as a reference to
 > _why_ [can-bind] works the way it does. The implementation described in this
 > section is subject to change between releases. Do not depend on any of this
 > information when using [can-bind].

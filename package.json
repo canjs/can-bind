@@ -1,7 +1,7 @@
 {
   "name": "can-bind",
-  "version": "0.0.0",
-  "description": "Bind different CanJS observables together.",
+  "version": "0.1.0",
+  "description": "Updates one observable value with the value of another observable.",
   "homepage": "https://canjs.com/doc/can-bind.html",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "node build.js",
-    "jshint": "jshint ./*.js --config",
+    "jshint": "jshint ./*.js ./test/*.js --config",
     "test": "npm run jshint && npm run testee",
     "testee": "testee test/test.html --browsers firefox",
     "preversion": "npm test && npm run build",
@@ -35,8 +35,18 @@
       "testee"
     ]
   },
-  "dependencies": {},
+  "dependencies": {
+    "can-queues": "^1.0.0",
+    "can-reflect": "^1.15.0",
+    "can-reflect-dependencies": "^1.0.0",
+    "can-symbol": "^1.6.0"
+  },
   "devDependencies": {
+    "can-observation": "^4.0.1",
+    "can-simple-map": "^4.0.1",
+    "can-simple-observable": "^2.0.4",
+    "can-test-helpers": "^1.1.2",
+    "can-value": "<2.0.0",
     "jshint": "^2.9.1",
     "steal": "^1.6.5",
     "steal-qunit": "^1.0.1",

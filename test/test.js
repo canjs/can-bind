@@ -1,8 +1,4 @@
-var canBind = require("../can-bind");
-var QUnit = require("steal-qunit");
-
-QUnit.module('can-bind');
-
-QUnit.test('basics', function() {
-  QUnit.equal(typeof canBind, 'function');
-});
+require("./core");
+require("./cycles-and-sticky");
+require("./detection");
+require("./initialization");

@@ -3,8 +3,10 @@ var canSymbol = require("can-symbol");
 var queues = require("can-queues");
 
 //!steal-remove-start
-var canLog = require("can-log/dev/dev");
-var canReflectDeps = require("can-reflect-dependencies");
+if(process.env.NODE_ENV !== 'production') {
+	var canLog = require("can-log/dev/dev");
+	var canReflectDeps = require("can-reflect-dependencies");
+}
 //!steal-remove-end
 
 // Symbols
@@ -27,14 +29,16 @@ function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateF
 		canReflect.offValue(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
+		if(process.env.NODE_ENV !== 'production') {
 
-		// The updateObservable is no longer mutated by listenToObservable
-		canReflectDeps.deleteMutatedBy(updateObservable, listenToObservable);
+			// The updateObservable is no longer mutated by listenToObservable
+			canReflectDeps.deleteMutatedBy(updateObservable, listenToObservable);
 
-		// The updateFunction no longer mutates anything
-		updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
-		};
-
+			// The updateFunction no longer mutates anything
+			updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
+			};
+			
+		}
 		//!steal-remove-end
 	}
 }
@@ -45,16 +49,19 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 		canReflect.onValue(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
+		if(process.env.NODE_ENV !== 'production') {
+			
+			// The updateObservable is mutated by listenToObservable
+			canReflectDeps.addMutatedBy(updateObservable, listenToObservable);
 
-		// The updateObservable is mutated by listenToObservable
-		canReflectDeps.addMutatedBy(updateObservable, listenToObservable);
-
-		// The updateFunction mutates updateObservable
-		updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
-			return {
-				valueDependencies: new Set([updateObservable])
+			// The updateFunction mutates updateObservable
+			updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
+				return {
+					valueDependencies: new Set([updateObservable])
+				};
 			};
-		};
+
+		}
 
 		//!steal-remove-end
 	}
@@ -78,14 +85,16 @@ function Bind(options) {
 
 	// These parameters must be supplied
 	//!steal-remove-start
-	if (options.child === undefined) {
-		throw new TypeError("You must supply a child");
-	}
-	if (options.parent === undefined) {
-		throw new TypeError("You must supply a parent");
-	}
-	if (options.queue && ["notify", "derive", "domUI"].indexOf(options.queue) === -1) {
-		throw new RangeError("Invalid queue; must be one of notify, derive, or domUI");
+	if(process.env.NODE_ENV !== 'production') {
+		if (options.child === undefined) {
+			throw new TypeError("You must supply a child");
+		}
+		if (options.parent === undefined) {
+			throw new TypeError("You must supply a parent");
+		}
+		if (options.queue && ["notify", "derive", "domUI"].indexOf(options.queue) === -1) {
+			throw new RangeError("Invalid queue; must be one of notify, derive, or domUI");
+		}
 	}
 	//!steal-remove-end
 
@@ -259,15 +268,17 @@ function Bind(options) {
 	};
 
 	//!steal-remove-start
-	if (options.updateChildName) {
-		Object.defineProperty(this.updateChild, "name", {
-			value: options.updateChildName
-		});
-	}
-	if (options.updateParentName) {
-		Object.defineProperty(this.updateParent, "name", {
-			value: options.updateParentName
-		});
+	if(process.env.NODE_ENV !== 'production') {
+		if (options.updateChildName) {
+			Object.defineProperty(this.updateChild, "name", {
+				value: options.updateChildName
+			});
+		}
+		if (options.updateParentName) {
+			Object.defineProperty(this.updateParent, "name", {
+				value: options.updateParentName
+			});
+		}
 	}
 	//!steal-remove-end
 
@@ -422,14 +433,16 @@ function updateValue(args) {
 		// because it can cause unexpected behavior… some people call those bugs. :)
 
 		//!steal-remove-start
-		var currentValue = canReflect.getValue(args.observable);
-		if (currentValue !== args.newValue) {
-			var warningParts = [
-				"can-bind updateValue: attempting to update " + args.debugObservableName + " " + canReflect.getName(args.observable) + " to new value: %o",
-				"…but the " + args.debugObservableName + " semaphore is at " + semaphore.value + " and the " + args.debugPartnerName + " semaphore is at " + args.partnerSemaphore.value + ". The number of allowed updates is " + args.allowedUpdates + ".",
-				"The " + args.debugObservableName + " value will remain unchanged; it’s currently: %o"
-			];
-			canLog.warn(warningParts.join("\n"), args.newValue, currentValue);
+		if(process.env.NODE_ENV !== 'production'){
+			var currentValue = canReflect.getValue(args.observable);
+			if (currentValue !== args.newValue) {
+				var warningParts = [
+					"can-bind updateValue: attempting to update " + args.debugObservableName + " " + canReflect.getName(args.observable) + " to new value: %o",
+					"…but the " + args.debugObservableName + " semaphore is at " + semaphore.value + " and the " + args.debugPartnerName + " semaphore is at " + args.partnerSemaphore.value + ". The number of allowed updates is " + args.allowedUpdates + ".",
+					"The " + args.debugObservableName + " value will remain unchanged; it’s currently: %o"
+				];
+				canLog.warn(warningParts.join("\n"), args.newValue, currentValue);
+			}
 		}
 		//!steal-remove-end
 	}

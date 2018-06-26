@@ -16,11 +16,8 @@ var onValueSymbol = canSymbol.for("can.onValue");
 var setValueSymbol = canSymbol.for("can.setValue");
 
 // Default implementations for setting the child and parent values
-function defaultSetChild(newValue) {
-	canReflect.setValue(this.child, newValue);
-}
-function defaultSetParent(newValue) {
-	canReflect.setValue(this.parent, newValue);
+function defaultSetValue(newValue, observable) {
+	canReflect.setValue(observable, newValue);
 }
 
 // Given an observable, stop listening to it and tear down the mutation dependencies
@@ -37,7 +34,7 @@ function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateF
 			// The updateFunction no longer mutates anything
 			updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
 			};
-			
+
 		}
 		//!steal-remove-end
 	}
@@ -50,7 +47,7 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 
 		//!steal-remove-start
 		if(process.env.NODE_ENV !== 'production') {
-			
+
 			// The updateObservable is mutated by listenToObservable
 			canReflectDeps.addMutatedBy(updateObservable, listenToObservable);
 
@@ -167,15 +164,11 @@ function Bind(options) {
 	// Custom child & parent setters can be supplied; if they aren’t provided,
 	// then create our own.
 	if (options.setChild === undefined) {
-		options.setChild = defaultSetChild.bind(options);
+		options.setChild = defaultSetValue;
 	}
 	if (options.setParent === undefined) {
-		options.setParent = defaultSetParent.bind(options);
+		options.setParent = defaultSetValue;
 	}
-
-	// Bind the methods to this instance
-	this.start = this.start.bind(this);
-	this.stop = this.stop.bind(this);
 
 	// Set the observables’ priority
 	if (options.priority !== undefined) {
@@ -202,7 +195,7 @@ function Bind(options) {
 	};
 
 	// This is the listener that’s called when the parent changes
-	this.updateChild = function(newValue) {
+	this._updateChild = function(newValue) {
 		updateValue({
 			bindingState: bindingState,
 			newValue: newValue,
@@ -235,7 +228,7 @@ function Bind(options) {
 	};
 
 	// This is the listener that’s called when the child changes
-	this.updateParent = function(newValue) {
+	this._updateParent = function(newValue) {
 		updateValue({
 			bindingState: bindingState,
 			newValue: newValue,
@@ -270,12 +263,12 @@ function Bind(options) {
 	//!steal-remove-start
 	if(process.env.NODE_ENV !== 'production') {
 		if (options.updateChildName) {
-			Object.defineProperty(this.updateChild, "name", {
+			Object.defineProperty(this._updateChild, "name", {
 				value: options.updateChildName
 			});
 		}
 		if (options.updateParentName) {
-			Object.defineProperty(this.updateParent, "name", {
+			Object.defineProperty(this._updateParent, "name", {
 				value: options.updateParentName
 			});
 		}
@@ -314,29 +307,29 @@ Object.assign(Bind.prototype, {
 				if (childValue === undefined) {
 					// Check if updating the child is allowed
 					if (options.onInitDoNotUpdateChild === false) {
-						this.updateChild(parentValue);
+						this._updateChild(parentValue);
 					}
 				} else if (options.onInitSetUndefinedParentIfChildIsDefined === true) {
-					this.updateParent(childValue);
+					this._updateParent(childValue);
 				}
 			} else {
 				// Check if updating the child is allowed
 				if (options.onInitDoNotUpdateChild === false) {
-					this.updateChild(parentValue);
+					this._updateChild(parentValue);
 				}
 			}
 
 		} else if (this._childToParent === true) {
 			// One-way child -> parent, so update the parent
 			childValue = canReflect.getValue(options.child);
-			this.updateParent(childValue);
+			this._updateParent(childValue);
 
 		} else if (this._parentToChild === true) {
 			// One-way parent -> child, so update the child
 			// Check if updating the child is allowed
 			if (options.onInitDoNotUpdateChild === false) {
 				parentValue = canReflect.getValue(options.parent);
-				this.updateChild(parentValue);
+				this._updateChild(parentValue);
 			}
 		}
 	},
@@ -346,7 +339,7 @@ Object.assign(Bind.prototype, {
 		if (this._bindingState.child === false && this._childToParent === true) {
 			var options = this._options;
 			this._bindingState.child = true;
-			turnOnListeningAndUpdate(options.child, options.parent, this.updateParent, options.queue);
+			turnOnListeningAndUpdate(options.child, options.parent, this._updateParent, options.queue);
 		}
 	},
 
@@ -355,7 +348,7 @@ Object.assign(Bind.prototype, {
 		if (this._bindingState.parent === false && this._parentToChild === true) {
 			var options = this._options;
 			this._bindingState.parent = true;
-			turnOnListeningAndUpdate(options.parent, options.child, this.updateChild, options.queue);
+			turnOnListeningAndUpdate(options.parent, options.child, this._updateChild, options.queue);
 		}
 	},
 
@@ -367,13 +360,13 @@ Object.assign(Bind.prototype, {
 		// Turn off the parent listener
 		if (bindingState.parent === true && this._parentToChild === true) {
 			bindingState.parent = false;
-			turnOffListeningAndUpdate(options.parent, options.child, this.updateChild, options.queue);
+			turnOffListeningAndUpdate(options.parent, options.child, this._updateChild, options.queue);
 		}
 
 		// Turn off the child listener
 		if (bindingState.child === true && this._childToParent === true) {
 			bindingState.child = false;
-			turnOffListeningAndUpdate(options.child, options.parent, this.updateParent, options.queue);
+			turnOffListeningAndUpdate(options.child, options.parent, this._updateParent, options.queue);
 		}
 	}
 
@@ -400,7 +393,7 @@ function updateValue(args) {
 
 		// Update the observable’s value; this uses either a custom function passed
 		// in when the binding was initialized or canReflect.setValue.
-		args.setValue(args.newValue);
+		args.setValue(args.newValue, args.observable);
 
 		// Increase the semaphore so that when the batch ends, if an update to the
 		// partner observable’s value is made, then it won’t update this observable
@@ -419,7 +412,7 @@ function updateValue(args) {
 		if (args.sticky) {
 			var observableValue = canReflect.getValue(args.observable);
 			if (observableValue !== canReflect.getValue(args.partner)) {
-				args.setPartner(observableValue);
+				args.setPartner(observableValue, args.partner);
 			}
 		}
 

@@ -24,12 +24,12 @@ import Bind from "can-bind";
 import DefineMap from "can-define/map/map";
 import value from "can-value";
 
-const childMap = new DefineMap({childProp: "original child value"});
-const parentMap = new DefineMap({parentProp: "original parent value"});
+const childMap = new DefineMap({childProp: "child value"});
+const parentMap = new DefineMap({parentProp: "parent value"});
 
 const binding = new Bind({
-  child: value.bind(bindMap, "inner.key"),
-  parent: value.bind(bindMap, "inner.key")
+  child: value.bind(childMap, "childProp"),
+  parent: value.bind(parentMap, "parentProp")
 });
 ```
 
@@ -44,8 +44,6 @@ New [can-bind] instances have the following methods:
 - [can-bind.prototype.startChild]: turn on just the child binding
 - [can-bind.prototype.startParent]: turn on just the parent binding
 - [can-bind.prototype.stop]: turn off both bindings
-- [can-bind.prototype.updateChild]: set the child’s value; this is what’s called when the parent changes
-- [can-bind.prototype.updateParent]: set the parent’s value; this is what’s called when the child changes
 
 The binding instance also has one property, [can-bind.prototype.parentValue],
 which returns the value of the parent observable.
@@ -60,8 +58,12 @@ which returns the value of the parent observable.
     - **parentToChild** `{Boolean}`: Optional; by default, [can-bind] will check if the parent has the [can-symbol/symbols/getValue can.getValue symbol] and either `setChild` is provided or the child has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way child-to-parent).
     - **priority** `{Number}`: Optional; a number to [can-reflect/setPriority set as the priority] for the child and parent observables.
     - **queue** `{String}`: Optional (by default, `"domUI"`); the name of the queue in which to listen for changes. Acceptable values include `"notify"`, `"derive"`, and `"domUI"`.
-    - **setChild** `{Function}`: Optional; a custom function for setting the child observable’s value.
-    - **setParent** `{Function}`: Optional; a custom function for setting the parent observable’s value.
+    - **setChild** `{function(parentValue, child)}`: Optional; a custom function for setting the child observable’s value. This function is called in the `queue` provided. Arguments to the function include:
+      - **parentValue** `{*}`: the parent’s value.
+      - **child** `{ObservableValue}`: the child observable.
+    - **setParent** `{function(childValue, parent)}`: Optional; a custom function for setting the parent observable’s value. This function is called in the `queue` provided. Arguments to the function include:
+      - **childValue** `{*}`: the child’s value.
+      - **parent** `{ObservableValue}`: the parent observable.
     - **sticky** `{String}`: Optional; defaults to `undefined`. Right now `"childSticksToParent"` is the only other allowed value, and it will try to make the child matches the parent’s value after setting the parent.
     - **updateChildName** `{String}`: Optional; a debugging name for the function that listens to the parent’s value and updates the child.
     - **updateParentName** `{String}`: Optional; a debugging name for the function that listens to the child’s value and updates the parent.
@@ -134,7 +136,7 @@ Component.extend({
         child: value.to(this, "paginate.count")
       });
       binding.start();
-      return binding.stop;
+      return binding.stop.bind(binding);
     },
     paginate: {
       value: function() {
@@ -163,13 +165,74 @@ Component.extend({
 ```
 @highlight 9-14,only
 
-Now [can-value] is used to get the value [can-value.from] `websitesCount` and
+[can-value] is used to get the value [can-value.from] `websitesCount` and
 assign it [can-value.to] `paginate.count`. You’ll want to immediately
 [can-bind.prototype.start] the binding and then return the
 [can-bind.prototype.stop] method from [can-component/connectedCallback] so the
 binding is turned off when the component is torn down.
 
-## Initialization
+### Customizing how the child & parent are set
+
+You can optionally provide `setChild` and/or `setParent` functions to customize
+how the child and parent values are set.
+
+Here’s an example that’s similar to what [can-route] does to bind a page’s URL
+(a string) to the app’s state (an object):
+
+```js
+import Bind from "can-bind";
+import deparam from "can-deparam";
+import Observation from "can-observation";
+import param from "can-param";
+import SimpleMap from "can-simple-map";
+import SimpleObservable from "can-simple-observable";
+
+// The parent will be a string
+const parent = new SimpleObservable(undefined);
+
+// The child will be an object
+const map = new SimpleMap({ prop: "value" });
+const child = new Observation(function() { return map.serialize(); });
+
+// Set up the binding
+const binding = new Bind({
+  child: child,
+  parent: parent,
+  setChild: function(newValue) {
+    const objectValue = deparam(newValue);
+    map.set(objectValue);
+  },
+  setParent: function(newValue) {
+    const stringValue = param(newValue);
+    parent.set(stringValue);
+  }
+});
+
+// Turn on the binding
+binding.start();
+```
+
+Given the binding above, when the parent’s value changes (for example):
+
+```js
+parent.set("prop=15");
+```
+
+[can-bind] will call `setChild("prop=15")`, so the child’s value is converted to
+`{prop: "15"}`.
+
+Likewise, when the child’s value changes:
+
+```js
+map.set({
+	prop: 22
+});
+```
+
+[can-bind] will call `setParent({ prop: 22 })`, so the parent’s value is
+converted to `"prop=22"`.
+
+## How initialization works
 
 When [can-bind.prototype.start] is called, it starts listening for changes to the
 child & parent observables and then tries to sync their values, depending on:
@@ -232,7 +295,7 @@ is allowed, but no more.
 
 The `sticky` option adds another behavior as part of the update process.
 
-When [can-bind.prototype.updateParent] is called, the parent’s value is set to
+When [can-bind]’s internal `_updateParent` method is called, the parent’s value is set to
 the child’s value. With `sticky: "childSticksToParent"`, the parent’s value is
 checked _after_ it’s set; if it doesn’t match the child’s value, then the child
 is set to the parent’s new value.
@@ -269,7 +332,7 @@ const binding = new Bind({
 ```
 
 If we set the child’s value to `undefined` (`child.set(undefined)`),
-[can-bind.prototype.updateParent] will be called to set the parent to
+[can-bind]’s internal `_updateParent` method will be called to set the parent to
 `undefined`; this will be ignored, so the parent’s value will remain at `15`.
 With the `sticky: "childSticksToParent"` option, [can-bind] will see that the
 child and parent values are not the same, and will set the child to the parent’s
@@ -279,15 +342,15 @@ value (`15`).
 
 ### Naming functions
 
-[can-bind] sets up [can-bind.prototype.updateChild] to listen for changes to the
+[can-bind] sets up an internal `_updateChild` method to listen for changes to the
 parent; when it changes, [can-bind] updates the child to match the parent.
-Likewise, [can-bind.prototype.updateParent] listens for changes to the child;
+Likewise, its internal `_updateParent` method listens for changes to the child;
 when it changes, [can-bind] updates the parent to match the child.
 
 If you provide the `updateChildName` and `updateParentName` options, [can-bind]
 will assign those names to their respective update functions so they show up
 better in a debugger. For example, providing `updateChildName` will name
-[can-bind.prototype.updateChild], so if you have a breakpoint when the child is
+[can-bind]’s internal `_updateChild` method, so if you have a breakpoint when the child is
 set, you can see this name in the debugger.
 
 ### Mutation dependency data
@@ -297,7 +360,7 @@ data for both the child and the parent. For example, when
 [can-bind.prototype.start] is called on a one-way child-to-parent binding,
 [can-bind] will call [can-reflect-dependencies.addMutatedBy] to register the
 child as a mutator of the parent and set the `@@can.getChangesDependencyRecord`
-symbol on [can-bind.prototype.updateParent] to indicate that it mutates the
+symbol on [can-bind]’s internal `_updateParent` method to indicate that it mutates the
 parent.
 
 When [can-bind.prototype.stop] is called, [can-bind] tears down the mutation
@@ -348,9 +411,9 @@ parent.set(1);
 
 In the example above, both the child and parent values will increment themselves
 by 1 every time they’re set. When `parent` is set to 1, it will increment itself
-to 2; [can-bind.prototype.updateChild] listens for when the parent changes and
-will set the child to 2, and it will increment itself to 3. The
-[can-bind.prototype.updateParent] listener will then try to set the `parent` to
+to 2; [can-bind] listens for when the parent changes and
+will set the child to 2, and it will increment itself to 3. [can-bind]’s
+internal `_updateParent` listener will then try to set the `parent` to
 3, but because `cycles` is 0 by default, an infinite loop will be prevented.
 
 [can-bind] will show you a warning in this circumstance. Let’s look at parts of
@@ -404,11 +467,11 @@ values are treated is how initialization works; read the
 `onInitDoNotUpdateChild` and `onInitSetUndefinedParentIfChildIsDefined` options
 influence how the two values are set when the binding is turned on.
 
-### On init, why do we call updateChild/updateParent instead of setChild/setParent?
+### On init, why do we call \_updateChild/\_updateParent instead of setChild/setParent?
 
 Let’s say we have a two-way binding with a defined parent and `undefined` child.
 When the binding is initialized, the child’s value will be set to match the
 parent (because the child is `undefined`). The listeners are already active when
 the initial values are set, so the child listener will fire and want to update
 the parent to match the child. This is prevented by the semaphore that’s
-incremented when [can-bind.prototype.updateParent] is called.
+incremented when `_updateParent` is called.

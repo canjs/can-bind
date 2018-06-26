@@ -319,8 +319,8 @@ canTestHelpers.dev.devOnlyTest("updateChildName and updateParentName options", f
 		updateParentName: "custom parent name"
 	});
 
-	assert.equal(binding.updateChild.name, "custom child name", "child name is correct");
-	assert.equal(binding.updateParent.name, "custom parent name", "parent name is correct");
+	assert.equal(binding._updateChild.name, "custom child name", "child name is correct");
+	assert.equal(binding._updateParent.name, "custom parent name", "parent name is correct");
 });
 
 QUnit.test("two-way binding with both values undefined", function(assert) {
@@ -355,7 +355,10 @@ QUnit.test("two-way binding updates are ignored after calling stop()", function(
 	});
 
 	// When the parent changes, turn the binding off
-	canReflect.onValue(parent, binding.stop, "domUI");
+	var turnOffBinding = function() {
+		binding.stop();
+	};
+	canReflect.onValue(parent, turnOffBinding, "domUI");
 
 	// Turn on the listeners
 	binding.start();
@@ -369,7 +372,7 @@ QUnit.test("two-way binding updates are ignored after calling stop()", function(
 	assert.equal(canReflect.getValue(parent), undefined, "parent stays the same");
 
 	// Turn off the listener
-	canReflect.offValue(parent, binding.stop, "domUI");
+	canReflect.offValue(parent, turnOffBinding, "domUI");
 });
 
 QUnit.test("parentValue property", function(assert) {

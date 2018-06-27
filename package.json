@@ -1,6 +1,6 @@
 {
   "name": "can-bind",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Updates one observable value with the value of another observable.",
   "homepage": "https://canjs.com/doc/can-bind.html",
   "repository": {

@@ -1,10 +1,9 @@
 @function can-bind.prototype.updateParent updateParent
 @parent can-bind.prototype
 @description Set the parent’s value as if the child had changed.
+@hide
 @signature `binding.updateParent(newValue)`
 @param {*} newValue The parent’s new value.
-
-@body
 
 This method sets the parent’s value if it is not currently in an update cycle
 and the parent’s current value doesn’t already match the new value.

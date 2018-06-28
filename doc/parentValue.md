@@ -3,6 +3,9 @@
 @description Returns the parent’s value.
 @signature `binding.parentValue`
 
+The example below shows creating a new binding and then reading the parent’s
+value with `parentValue`:
+
 ```js
 import Bind from "can-bind";
 import DefineMap from "can-define/map/map";
@@ -29,3 +32,6 @@ import canReflect from "can-reflect";
 
 const parentValue = canReflect.getValue(parent);
 ```
+
+The `parentValue` property is most commonly used with
+[can-bind.prototype.startParent]; see its documentation for more details.

@@ -181,17 +181,17 @@ Here’s an example that’s similar to what [can-route] does to bind a page’s
 
 ```js
 import Bind from "can-bind";
+import DefineMap from "can-define/map/map";
 import deparam from "can-deparam";
 import Observation from "can-observation";
 import param from "can-param";
-import SimpleMap from "can-simple-map";
 import SimpleObservable from "can-simple-observable";
 
 // The parent will be a string
-const parent = new SimpleObservable(undefined);
+const parent = new SimpleObservable("prop=value");
 
 // The child will be an object
-const map = new SimpleMap({ prop: "value" });
+const map = new DefineMap({});
 const child = new Observation(function() { return map.serialize(); });
 
 // Set up the binding
@@ -200,7 +200,7 @@ const binding = new Bind({
   parent: parent,
   setChild: function(newValue) {
     const objectValue = deparam(newValue);
-    map.set(objectValue);
+    map.update(objectValue);
   },
   setParent: function(newValue) {
     const stringValue = param(newValue);

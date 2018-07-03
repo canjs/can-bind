@@ -36,6 +36,7 @@
     ]
   },
   "dependencies": {
+    "can-namespace": "1.0.0",
     "can-queues": "^1.0.0",
     "can-reflect": "^1.15.0",
     "can-reflect-dependencies": "^1.0.0",

@@ -1,5 +1,6 @@
 var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
+var namespace = require("can-namespace");
 var queues = require("can-queues");
 
 //!steal-remove-start
@@ -441,4 +442,4 @@ function updateValue(args) {
 	}
 }
 
-module.exports = Bind;
+module.exports = namespace.Bind = Bind;

@@ -51,7 +51,7 @@
     "jshint": "^2.9.1",
     "steal": "^1.6.5",
     "steal-qunit": "^1.0.1",
-    "steal-tools": "^1.11.3",
+    "steal-tools": "^2.0.0",
     "testee": "^0.8.0"
   },
   "license": "MIT"

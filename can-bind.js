@@ -55,8 +55,10 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 
 			// The updateFunction mutates updateObservable
 			updateFunction[getChangesSymbol] = function getChangesDependencyRecord() {
+				var s = new Set();
+				s.add(updateObservable);
 				return {
-					valueDependencies: new Set([updateObservable])
+					valueDependencies: s
 				};
 			};
 

@@ -3,6 +3,7 @@ var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
 var namespace = require("can-namespace");
 var queues = require("can-queues");
+var canAssign = require("can-assign");
 
 //!steal-remove-start
 if(process.env.NODE_ENV !== 'production') {
@@ -72,7 +73,7 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 function Semaphore() {
 	this.value = 0;
 }
-Object.assign(Semaphore.prototype, {
+canAssign(Semaphore.prototype, {
 	decrement: function() {
 		this.value -= 1;
 	},
@@ -287,7 +288,7 @@ Object.defineProperty(Bind.prototype, "parentValue", {
 	}
 });
 
-Object.assign(Bind.prototype, {
+canAssign(Bind.prototype, {
 
 	// Turn on any bindings that haven’t already been enabled;
 	// also update the child or parent if need be.

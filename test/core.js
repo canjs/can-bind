@@ -57,12 +57,14 @@ canTestHelpers.dev.devOnlyTest("one-way binding to child - dependency data", fun
 
 	// Child dependency/mutation data
 	var childDepData = canReflectDeps.getDependencyDataOf(child);
+	var valueDependencies = new Set();
+	valueDependencies.add(parent);
 	assert.deepEqual(
 		childDepData,
 		{
 			whatChangesMe: {
 				mutate: {
-					valueDependencies: new Set([parent])
+					valueDependencies: valueDependencies
 				}
 			}
 		},

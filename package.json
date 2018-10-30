@@ -46,7 +46,7 @@
   "devDependencies": {
     "can-observation": "^4.0.1",
     "can-simple-map": "^4.0.1",
-    "can-simple-observable": "^2.0.4",
+    "can-simple-observable": "^2.4.1",
     "can-test-helpers": "^1.1.2",
     "can-value": "<2.0.0",
     "jshint": "^2.9.1",

@@ -16,6 +16,20 @@ function protectAgainstInfiniteLoops(func) {
 }
 
 module.exports = {
-  incrementByOne: incrementByOne,
-  protectAgainstInfiniteLoops: protectAgainstInfiniteLoops
+	incrementByOne: incrementByOne,
+	protectAgainstInfiniteLoops: protectAgainstInfiniteLoops,
+	moduleHooks: {
+		setup: function(){
+			this.groupCollapsed = console.groupCollapsed;
+			if(this.groupCollapsed) {
+				console.groupCollapsed = null; //no op
+			}
+
+		},
+		teardown: function(){
+			if(this.groupCollapsed) {
+				console.groupCollapsed = this.groupCollapsed;
+			}
+		}
+	}
 };

@@ -9,7 +9,7 @@ var SettableObservable = require("can-simple-observable/settable/settable");
 var SimpleMap = require("can-simple-map");
 var SimpleObservable = require("can-simple-observable");
 
-QUnit.module("can-bind core");
+QUnit.module("can-bind core",helpers.moduleHooks);
 
 QUnit.test("one-way binding to child", function(assert) {
 	var parentValue = new SimpleObservable(0);

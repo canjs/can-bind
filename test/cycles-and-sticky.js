@@ -6,7 +6,7 @@ var QUnit = require("steal-qunit");
 var SettableObservable = require("can-simple-observable/settable/settable");
 var SimpleObservable = require("can-simple-observable");
 
-QUnit.module("can-bind cycles and sticky");
+QUnit.module("can-bind cycles and sticky",helpers.moduleHooks);
 
 QUnit.test("two-way binding with childSticksToParent", function(assert) {
 	var child = new SimpleObservable(0);
@@ -116,6 +116,7 @@ QUnit.test("cyclical two-way binding - 0 cycles not sticky", function() {
 });
 
 canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky - warning in dev", function() {
+
 	// Note that the actual warning shown in the console will be formatted nicely;
 	// the “3” is the new value and the “2” is the parent’s current value
 	var warningRegex = /Printing mutation history: 3 2/;
@@ -144,6 +145,8 @@ canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky -
 	});
 
 	QUnit.equal(teardown(), 1, "warning shown");
+
+
 });
 
 QUnit.test("cyclical two-way binding - 1 cycle not sticky", function() {

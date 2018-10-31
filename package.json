@@ -17,9 +17,8 @@
     "jshint": "jshint ./*.js ./test/*.js --config",
     "test": "npm run jshint && npm run testee",
     "testee": "testee test/test.html --browsers firefox",
-    "preversion": "npm test && npm run build",
-    "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
-    "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
+    "preversion": "npm test",
+    "postpublish": "git push --tags && git push",
     "release:major": "npm version major && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish"

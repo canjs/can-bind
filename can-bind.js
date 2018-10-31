@@ -70,15 +70,35 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 }
 
 // Semaphores are used to keep track of updates to the child & parent
-function Semaphore() {
+// For debugging purposes, Semaphore and Bind are highly coupled.
+function Semaphore(binding, type) {
 	this.value = 0;
+	this._binding = binding;
+	this._type = type;
 }
 canAssign(Semaphore.prototype, {
 	decrement: function() {
 		this.value -= 1;
 	},
-	increment: function() {
+	increment: function(args) {
+		this._incremented = true;
 		this.value += 1;
+		//!steal-remove-start
+		if(process.env.NODE_ENV !== 'production') {
+			if(this.value === 1) {
+				this._binding._debugSemaphores = [];
+			}
+			var semaphoreData = {
+				type: this._type,
+				action: "increment",
+				observable: args.observable,
+				newValue: args.newValue,
+				value: this.value,
+				lastTask: queues.lastTask()
+			};
+			this._binding._debugSemaphores.push(semaphoreData);
+		}
+		//!steal-remove-end
 	}
 });
 
@@ -132,8 +152,8 @@ function Bind(options) {
 	// semaphore so that if it’s two-way binding, then the “other” observable
 	// will only update if the total count for both semaphores is less than or
 	// equal to twice the number of cycles (because a cycle means two updates).
-	var childSemaphore = new Semaphore();
-	var parentSemaphore = new Semaphore();
+	var childSemaphore = new Semaphore(this,"child");
+	var parentSemaphore = new Semaphore(this,"parent");
 
 	// Determine if this is a one-way or two-way binding; by default, accept
 	// whatever options are passed in, but if they’re not defined, then check for
@@ -194,15 +214,15 @@ function Bind(options) {
 	// finish setting up the child binding. This is also checked when updating
 	// values; if stop() has been called but updateValue() is called, then we
 	// ignore the update.
-	var bindingState = this._bindingState = {
+	this._bindingState = {
 		child: false,
 		parent: false
 	};
 
 	// This is the listener that’s called when the parent changes
 	this._updateChild = function(newValue) {
-		updateValue({
-			bindingState: bindingState,
+		updateValue.call(this, {
+			bindingState: this._bindingState,
 			newValue: newValue,
 
 			// Some options used for debugging
@@ -230,12 +250,12 @@ function Bind(options) {
 			setPartner: options.setParent,
 			partnerSemaphore: parentSemaphore
 		});
-	};
+	}.bind(this);
 
 	// This is the listener that’s called when the child changes
 	this._updateParent = function(newValue) {
-		updateValue({
-			bindingState: bindingState,
+		updateValue.call(this, {
+			bindingState: this._bindingState,
 			newValue: newValue,
 
 			// Some options used for debugging
@@ -263,20 +283,20 @@ function Bind(options) {
 			setPartner: options.setChild,
 			partnerSemaphore: childSemaphore
 		});
-	};
+	}.bind(this);
 
 	//!steal-remove-start
 	if(process.env.NODE_ENV !== 'production') {
-		if (options.updateChildName) {
-			Object.defineProperty(this._updateChild, "name", {
-				value: options.updateChildName
-			});
-		}
-		if (options.updateParentName) {
-			Object.defineProperty(this._updateParent, "name", {
-				value: options.updateParentName
-			});
-		}
+
+		Object.defineProperty(this._updateChild, "name", {
+			value: options.updateChildName ? options.updateChildName : "update "+canReflect.getName(options.child),
+			configurable: true
+		});
+
+		Object.defineProperty(this._updateParent, "name", {
+			value: options.updateParentName ? options.updateParentName : "update "+canReflect.getName(options.parent),
+			configurable: true
+		});
 	}
 	//!steal-remove-end
 
@@ -379,7 +399,7 @@ canAssign(Bind.prototype, {
 
 // updateValue is a helper function that’s used by updateChild and updateParent
 function updateValue(args) {
-
+	/* jshint validthis: true */
 	// Check to see whether the binding is active; ignore updates if it isn’t active
 	var bindingState = args.bindingState;
 	if (bindingState.child === false && bindingState.parent === false) {
@@ -396,14 +416,16 @@ function updateValue(args) {
 	if ((semaphore.value + args.partnerSemaphore.value) <= args.allowedUpdates) {
 		queues.batch.start();
 
+		// Increase the semaphore so that when the batch ends, if an update to the
+		// partner observable’s value is made, then it won’t update this observable
+		// again unless cycles are allowed.
+		semaphore.increment(args);
+
 		// Update the observable’s value; this uses either a custom function passed
 		// in when the binding was initialized or canReflect.setValue.
 		args.setValue(args.newValue, args.observable);
 
-		// Increase the semaphore so that when the batch ends, if an update to the
-		// partner observable’s value is made, then it won’t update this observable
-		// again unless cycles are allowed.
-		semaphore.increment();
+
 
 		// Decrease the semaphore after all other updates have occurred
 		queues.mutateQueue.enqueue(semaphore.decrement, semaphore, []);
@@ -435,11 +457,60 @@ function updateValue(args) {
 			var currentValue = canReflect.getValue(args.observable);
 			if (currentValue !== args.newValue) {
 				var warningParts = [
-					"can-bind updateValue: attempting to update " + args.debugObservableName + " " + canReflect.getName(args.observable) + " to new value: %o",
+					"can-bind: attempting to update " + args.debugObservableName + " " + canReflect.getName(args.observable) + " to new value: %o",
 					"…but the " + args.debugObservableName + " semaphore is at " + semaphore.value + " and the " + args.debugPartnerName + " semaphore is at " + args.partnerSemaphore.value + ". The number of allowed updates is " + args.allowedUpdates + ".",
-					"The " + args.debugObservableName + " value will remain unchanged; it’s currently: %o"
+					"The " + args.debugObservableName + " value will remain unchanged; it’s currently: %o. ",
+					"Read https://canjs.com/doc/can-bind.html#Warnings for more information. Printing mutation history:"
 				];
 				canLog.warn(warningParts.join("\n"), args.newValue, currentValue);
+				if(console.groupCollapsed) {
+					// stores the last stack we've seen so we only need to show what's happened since the
+					// last increment.
+					var lastStack = [];
+					var getFromLastStack = function(stack){
+						if(lastStack.length) {
+							// walk backwards
+							for(var i = lastStack.length - 1; i >= 0 ; i--) {
+								var index = stack.indexOf(lastStack[i]);
+								if(index !== - 1) {
+									return stack.slice(i+1);
+								}
+							}
+						}
+						return stack;
+					};
+					// Loop through all the debug information
+					// And print out what caused increments.
+					this._debugSemaphores.forEach(function(semaphoreMutation){
+						if(semaphoreMutation.action === "increment") {
+							console.groupCollapsed(semaphoreMutation.type+" "+canReflect.getName(semaphoreMutation.observable)+" set.");
+							var stack = queues.stack(semaphoreMutation.lastTask);
+							var printStack = getFromLastStack(stack);
+							lastStack = stack;
+							// This steals how `logStack` logs information.
+							queues.logStack.call({
+								stack: function(){
+									return printStack;
+								}
+							});
+							console.log(semaphoreMutation.type+ " semaphore incremented to "+semaphoreMutation.value+".");
+							console.log(canReflect.getName(semaphoreMutation.observable),semaphoreMutation.observable,"set to ", semaphoreMutation.newValue);
+							console.groupEnd();
+						}
+					});
+					console.groupCollapsed(args.debugObservableName+" "+canReflect.getName(args.observable)+" NOT set.");
+					var stack = getFromLastStack(queues.stack());
+					queues.logStack.call({
+						stack: function(){
+							return stack;
+						}
+					});
+					console.log(args.debugObservableName+" semaphore ("+semaphore.value+
+					 ") + "+args.debugPartnerName+" semaphore ("+args.partnerSemaphore.value+ ") IS NOT <= allowed updates ("+
+					 args.allowedUpdates+")");
+					console.log("Prevented from setting "+canReflect.getName(args.observable), args.observable, "to", args.newValue);
+					console.groupEnd();
+				}
 			}
 		}
 		//!steal-remove-end

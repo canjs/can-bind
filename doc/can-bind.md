@@ -370,15 +370,16 @@ function(s).
 
 ## Warnings
 
-### can-bind updateValue: attempting to update
+### can-bind: attempting to update
 
 In some circumstances, you might come across a warning like this with a two-way
 binding:
 
 ```
-can-bind updateValue: attempting to update parent SettableObservable<> to new value: 3
+can-bind: attempting to update parent SettableObservable<PARENT> to new value: 3
 …but the parent semaphore is at 0 and the child semaphore is at 1. The number of allowed updates is 0.
-The parent value will remain unchanged; it’s currently: 2
+The parent value will remain unchanged; it’s currently: 2.
+Read https://canjs.com/doc/can-bind.html#Warnings for more information. Printing mutation history:
 ```
 
 In summary, [can-bind] is trying to warn you that it could not make the child
@@ -387,21 +388,21 @@ and parent values match. This might indicate that there’s a bug in your code.
 Let’s look again at the example in the cycles section above:
 
 ```js
-import Bind from "can-bind";
-import SettableObservable from "can-simple-observable/settable/settable";
+import {Bind, value} from "can";
 
 // Child and parent observable values
-const child = new SettableObservable(function(newValue) {
+const parent = value.returnedBy(function PARENT(newValue){
 	return newValue + 1;
 }, null, 0);
-const parent = new SettableObservable(function(newValue) {
+
+const child = value.returnedBy(function CHILD(newValue){
 	return newValue + 1;
-}, null, 0);
+}, null, 1);
 
 // Create and start the binding
 const binding = new Bind({
-  child: child,
-  parent: parent
+  parent: parent,
+  child: child
 });
 binding.start();
 
@@ -437,6 +438,15 @@ is how [can-bind] determined that it shouldn’t allow the parent to be set agai
 
 Since the parent won’t be update to the child’s new value, it will remain at its
 current value (2 in this example).
+
+CanJS will also print out the mutations that caused the changes and their logStack:
+
+```
+child SettableObservable<CHILD> set.
+parent SettableObservable<PARENT> NOT set.
+```
+
+Read [can-queues.logStack] for more information about what is printed here.
 
 ## How it works
 

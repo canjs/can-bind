@@ -118,13 +118,26 @@ QUnit.test("cyclical two-way binding - 0 cycles not sticky", function() {
 canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky - warning in dev", function() {
 	// Note that the actual warning shown in the console will be formatted nicely;
 	// the “3” is the new value and the “2” is the parent’s current value
-	var warningRegex = /The parent value will remain unchanged; it’s currently: %o 3 2/;
-	var teardown = canTestHelpers.dev.willWarn(warningRegex);
+	var warningRegex = /Printing mutation history: 3 2/;
 
+	var teardown = canTestHelpers.dev.willWarn(warningRegex);
+	var parentSet = helpers.protectAgainstInfiniteLoops(helpers.incrementByOne);
+	Object.defineProperty(parentSet,"name",{
+		value: "PARENT",
+		configurable: true
+	});
+	var parent = new SettableObservable(parentSet, null, 0);
+
+	var childSet = helpers.protectAgainstInfiniteLoops(helpers.incrementByOne);
+	Object.defineProperty(childSet,"name",{
+		value: "CHILD",
+		configurable: true
+	});
+	var child = new SettableObservable(childSet, null, 0);
 	// Test is the same as the one above, we just need to do this in dev mode
 	cycleStickyTest({
-		parent: new SettableObservable(helpers.protectAgainstInfiniteLoops(helpers.incrementByOne), null, 0),
-		child: new SettableObservable(helpers.protectAgainstInfiniteLoops(helpers.incrementByOne), null, 0),
+		parent: parent,
+		child: child,
 		startBySetting: "parent",
 		expectedParent: 2,
 		expectedChild: 3

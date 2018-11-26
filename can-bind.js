@@ -141,7 +141,7 @@ function Bind(options) {
 			options.onInitDoNotUpdateChild
 			: false;
 
-	// onInitDoNotUpdateChild is false by default
+	// onInitDoNotUpdateParent is false by default
 	options.onInitDoNotUpdateParent =
 		typeof options.onInitDoNotUpdateParent === "boolean" ?
 			options.onInitDoNotUpdateParent

@@ -30,7 +30,7 @@ Additionally, it tries to sync the values of the child and parent observables,
 depending on:
 
 1. Whether the child or parent is equal to `undefined`.
-2. The values of the `onInitDoNotUpdateChild` and `onInitSetUndefinedParentIfChildIsDefined` options.
+2. The values of the `onInitDoNotUpdateChild`, `onInitDoNotUpdateParent` and `onInitSetUndefinedParentIfChildIsDefined` options.
 3. If it’s a one-way or two-way binding.
 
 @body
@@ -95,4 +95,29 @@ Below is the same diagram as above, except with the options
 Δ child=undefined   <-  parent=2           =>  child=undefined  parent=2          None
 Δ child=undefined   <-  parent=undefined   =>  child=undefined  parent=undefined  None
 Δ child=3           <-  parent=3           =>  child=3          parent=3          None
+```
+
+The `onInitDoNotUpdateParent` option can change how initialization works. This
+option’s value is `false` by default, but if it’s set to `true`, then the parent
+will _never_ be set when the binding is initialized. This option does not effect
+one-way parent-to-child bindings because the child’s value is never set when
+that type of binding is initialized.
+
+Below is the same diagram as above, except with the options
+`onInitDoNotUpdateParent=true` and `onInitSetUndefinedParentIfChildIsDefined=true`:
+
+```
+Child start value      Parent start value     Child end value  Parent end value  API call
+
+child=1           <->  parent=2           =>  child=2          parent=2          _updateChild(2)
+child=1           <->  parent=undefined   =>  child=1          parent=undefined  None
+child=undefined   <->  parent=2           =>  child=2          parent=2          _updateChild(2)
+child=undefined   <->  parent=undefined   =>  child=undefined  parent=undefined  _updateChild(undefined)
+child=3           <->  parent=3           =>  child=3          parent=3          _updateChild(3)
+
+child=1            ->  parent=2           =>  child=1          parent=2          None
+child=1            ->  parent=undefined   =>  child=1          parent=undefined  None
+child=undefined    ->  parent=2           =>  child=undefined  parent=undefined  None
+child=undefined    ->  parent=undefined   =>  child=undefined  parent=undefined  None
+child=3            ->  parent=3           =>  child=3          parent=3          None
 ```

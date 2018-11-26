@@ -21,7 +21,7 @@ QUnit.test("undefined child and defined parent with setter", function(assert) {
 		parent: parent
 	});
 
-	// When the binding is turned on, the child is set to the parnet’s value
+	// When the binding is turned on, the child is set to the parent’s value
 	// because the child is undefined and the parent is a defined value. This
 	// shouldn’t result in updateParent(15) being called.
 	binding.start();
@@ -73,6 +73,7 @@ function initializationTest(options) {
 		child: child,
 		childToParent: options.childToParent,
 		onInitDoNotUpdateChild: options.onInitDoNotUpdateChild,
+		onInitDoNotUpdateParent: options.onInitDoNotUpdateParent,
 		onInitSetUndefinedParentIfChildIsDefined: options.onInitSetUndefinedParentIfChildIsDefined,
 		parent: parent,
 		parentToChild: options.parentToChild
@@ -182,9 +183,24 @@ QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=1", function() {
 		childToParent: true,
 		parentToChild: false,
 		onInitDoNotUpdateChild: false,
+		onInitDoNotUpdateParent: false,
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 1
+	});
+});
+
+QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=undefined", function() {
+	initializationTest({
+		startingChild: 1,
+		startingParent: undefined,
+		childToParent: true,
+		parentToChild: false,
+		onInitDoNotUpdateChild: false,
+		onInitDoNotUpdateParent: true,
+		onInitSetUndefinedParentIfChildIsDefined: true,
+		expectedChild: 1,
+		expectedParent: undefined
 	});
 });
 

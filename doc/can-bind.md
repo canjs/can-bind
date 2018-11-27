@@ -35,7 +35,7 @@ const binding = new Bind({
 
 [can-bind] gives you more options to control how the binding works; see the
 documentation below for a brief explanation of each option, and read further
-below to learn more about options such as `cycles`, `onInitDoNotUpdateChild`,
+below to learn more about options such as `cycles`, `onInitDoNotUpdateChild`, `onInitDoNotUpdateParent`,
 `onInitSetUndefinedParentIfChildIsDefined`, and `sticky`.
 
 New [can-bind] instances have the following methods:
@@ -239,7 +239,7 @@ When [can-bind.prototype.start] is called, it starts listening for changes to th
 child & parent observables and then tries to sync their values, depending on:
 
 1. Whether the child or parent is equal to `undefined`.
-2. The values of the `onInitDoNotUpdateChild` and `onInitSetUndefinedParentIfChildIsDefined` options.
+2. The values of the `onInitDoNotUpdateChild`, `onInitDoNotUpdateParent` and `onInitSetUndefinedParentIfChildIsDefined` options.
 3. If it’s a one-way or two-way binding.
 
 See the [can-bind.prototype.start] documentation for more information about how

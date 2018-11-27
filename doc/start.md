@@ -100,24 +100,23 @@ Below is the same diagram as above, except with the options
 The `onInitDoNotUpdateParent` option can change how initialization works. This
 option’s value is `false` by default, but if it’s set to `true`, then the parent
 will _never_ be set when the binding is initialized. This option does not effect
-one-way parent-to-child bindings because the child’s value is never set when
+one-way parent-to-child bindings because the parent’s value is never set when
 that type of binding is initialized.
 
-Below is the same diagram as above, except with the options
-`onInitDoNotUpdateParent=true` and `onInitSetUndefinedParentIfChildIsDefined=true`:
+Below is a diagram that shows the change (Δ) from the default behaviour when `onInitDoNotUpdateParent=true`:
 
 ```
-Child start value      Parent start value     Child end value  Parent end value  API call
+Δ	Child start value      Parent start value     Child end value  Parent end value  API call
 
-child=1           <->  parent=2           =>  child=2          parent=2          _updateChild(2)
-child=1           <->  parent=undefined   =>  child=1          parent=undefined  None
-child=undefined   <->  parent=2           =>  child=2          parent=2          _updateChild(2)
-child=undefined   <->  parent=undefined   =>  child=undefined  parent=undefined  _updateChild(undefined)
-child=3           <->  parent=3           =>  child=3          parent=3          _updateChild(3)
+	child=1           <->  parent=2           =>  child=2          parent=2          _updateChild(2)
+Δ	child=1           <->  parent=undefined   =>  child=1          parent=undefined  None
+	child=undefined   <->  parent=2           =>  child=2          parent=2          _updateChild(2)
+	child=undefined   <->  parent=undefined   =>  child=undefined  parent=undefined  _updateChild(undefined)
+	child=3           <->  parent=3           =>  child=3          parent=3          _updateChild(3)
 
-child=1            ->  parent=2           =>  child=1          parent=2          None
-child=1            ->  parent=undefined   =>  child=1          parent=undefined  None
-child=undefined    ->  parent=2           =>  child=undefined  parent=undefined  None
-child=undefined    ->  parent=undefined   =>  child=undefined  parent=undefined  None
-child=3            ->  parent=3           =>  child=3          parent=3          None
+Δ	child=1            ->  parent=2           =>  child=1          parent=2          None
+Δ	child=1            ->  parent=undefined   =>  child=1          parent=undefined  None
+Δ	child=undefined    ->  parent=2           =>  child=undefined  parent=undefined  None
+Δ	child=undefined    ->  parent=undefined   =>  child=undefined  parent=undefined  None
+Δ	child=3            ->  parent=3           =>  child=3          parent=3          None
 ```

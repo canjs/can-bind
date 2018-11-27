@@ -35,7 +35,7 @@ const binding = new Bind({
 
 [can-bind] gives you more options to control how the binding works; see the
 documentation below for a brief explanation of each option, and read further
-below to learn more about options such as `cycles`, `onInitDoNotUpdateChild`,
+below to learn more about options such as `cycles`, `onInitDoNotUpdateChild`, `onInitDoNotUpdateParent`,
 `onInitSetUndefinedParentIfChildIsDefined`, and `sticky`.
 
 New [can-bind] instances have the following methods:
@@ -53,6 +53,7 @@ which returns the value of the parent observable.
     - **childToParent** `{Boolean}`: Optional; by default, [can-bind] will check if the child has the [can-symbol/symbols/getValue can.getValue symbol] and either `setParent` is provided or the parent has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way parent-to-child).
     - **cycles** `{Number}`: Optional; defaults to `0`. When an observable’s value is changed in a two-way binding, the number of times it can be changed again as a result of setting the other observable. This can be any number greater than 0 if `sticky` is undefined; otherwise, an error will be thrown if this is provided with `sticky`.
     - **onInitDoNotUpdateChild** `{Boolean}`: Optional; defaults to `false`. If `true`, then never set the child when starting a binding.
+    - **onInitDoNotUpdateParent** `{Boolean}`: Optional; defaults to `false`. If `true`, then never set the parent when starting a binding.
     - **onInitSetUndefinedParentIfChildIsDefined** `{Boolean}`: Optional; defaults to `true`: when the binding is started, if the parent’s value is undefined and the child’s value is defined, then set the parent to the child’s value.
     - **parent** `{ObservableValue}`: Required; the parent observable.
     - **parentToChild** `{Boolean}`: Optional; by default, [can-bind] will check if the parent has the [can-symbol/symbols/getValue can.getValue symbol] and either `setChild` is provided or the child has the [can-symbol/symbols/setValue can.setValue symbol]; providing this option overrides those checks with the option’s value (e.g. `false` will force the binding to be one-way child-to-parent).
@@ -238,7 +239,7 @@ When [can-bind.prototype.start] is called, it starts listening for changes to th
 child & parent observables and then tries to sync their values, depending on:
 
 1. Whether the child or parent is equal to `undefined`.
-2. The values of the `onInitDoNotUpdateChild` and `onInitSetUndefinedParentIfChildIsDefined` options.
+2. The values of the `onInitDoNotUpdateChild`, `onInitDoNotUpdateParent` and `onInitSetUndefinedParentIfChildIsDefined` options.
 3. If it’s a one-way or two-way binding.
 
 See the [can-bind.prototype.start] documentation for more information about how

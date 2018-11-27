@@ -141,6 +141,12 @@ function Bind(options) {
 			options.onInitDoNotUpdateChild
 			: false;
 
+	// onInitDoNotUpdateParent is false by default
+	options.onInitDoNotUpdateParent =
+		typeof options.onInitDoNotUpdateParent === "boolean" ?
+			options.onInitDoNotUpdateParent
+			: false;
+
 	// onInitSetUndefinedParentIfChildIsDefined is true by default
 	options.onInitSetUndefinedParentIfChildIsDefined =
 		typeof options.onInitSetUndefinedParentIfChildIsDefined === "boolean" ?
@@ -334,7 +340,7 @@ canAssign(Bind.prototype, {
 					if (options.onInitDoNotUpdateChild === false) {
 						this._updateChild(parentValue);
 					}
-				} else if (options.onInitSetUndefinedParentIfChildIsDefined === true) {
+				} else if (options.onInitDoNotUpdateParent === false && options.onInitSetUndefinedParentIfChildIsDefined === true) {
 					this._updateParent(childValue);
 				}
 			} else {
@@ -346,8 +352,11 @@ canAssign(Bind.prototype, {
 
 		} else if (this._childToParent === true) {
 			// One-way child -> parent, so update the parent
-			childValue = canReflect.getValue(options.child);
-			this._updateParent(childValue);
+			// Check if we are to initialize the parent
+			if (options.onInitDoNotUpdateParent === false) {
+				childValue = canReflect.getValue(options.child);
+				this._updateParent(childValue);
+			}
 
 		} else if (this._parentToChild === true) {
 			// One-way parent -> child, so update the child

@@ -77,31 +77,31 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 	}
 }
 
+// onEmit function
+function onEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[onEmitSymbol](updateFunction, queue);
+}
+
+// offEmit function
+function offEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[offEmitSymbol](updateFunction, queue);
+}
+
 // Given an observable return a combined onValue|onEmit function wrapper
 function getOnValueOrOnEmitFunctionFromObservable (listenToObservable) {
-	// If we have either onValue or onEmit return a function to wrap them both
-	if (listenToObservable[onValueSymbol] || listenToObservable[onEmitSymbol]) {
-		return function (listenToObservable, updateFunction, queue) {
-			if (listenToObservable[onValueSymbol]) {
-				canReflect.onValue(listenToObservable, updateFunction, queue);
-			} else if (listenToObservable[onEmitSymbol]) {
-				listenToObservable[onEmitSymbol](updateFunction, queue);
-			}
-		};
+	if (listenToObservable[onValueSymbol]) {
+		return canReflect.onValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		return onEmit;
 	}
 }
 
 // Given an observable return a combined offValue|offEmit function wrapper
 function getOffValueOrOffEmitFunctionFromObservable (listenToObservable) {
-	// If we have either offValue or offEmit return a function to wrap them both
-	if (listenToObservable[onValueSymbol] || listenToObservable[onEmitSymbol]) {
-		return function (listenToObservable, updateFunction, queue) {
-			if (listenToObservable[onValueSymbol]) {
-				canReflect.offValue(listenToObservable, updateFunction, queue);
-			} else if (listenToObservable[onEmitSymbol]) {
-				listenToObservable[offEmitSymbol](updateFunction, queue);
-			}
-		};
+	if (listenToObservable[onValueSymbol]) {
+		return canReflect.offValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		return offEmit;
 	}
 }
 

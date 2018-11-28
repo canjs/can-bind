@@ -16,6 +16,8 @@ if(process.env.NODE_ENV !== 'production') {
 var getChangesSymbol = canSymbol.for("can.getChangesDependencyRecord");
 var getValueSymbol = canSymbol.for("can.getValue");
 var onValueSymbol = canSymbol.for("can.onValue");
+var onEmitSymbol = canSymbol.for("can.onEmit");
+var offEmitSymbol = canSymbol.for("can.offEmit");
 var setValueSymbol = canSymbol.for("can.setValue");
 
 // Default implementations for setting the child and parent values
@@ -25,8 +27,10 @@ function defaultSetValue(newValue, observable) {
 
 // Given an observable, stop listening to it and tear down the mutation dependencies
 function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
-	if (listenToObservable[onValueSymbol]) {
-		canReflect.offValue(listenToObservable, updateFunction, queue);
+	var offValueOrOffEmitFn = getOffValueOrOffEmitFunctionFromObservable(listenToObservable);
+
+	if (offValueOrOffEmitFn) {
+		offValueOrOffEmitFn(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
 		if(process.env.NODE_ENV !== 'production') {
@@ -40,13 +44,17 @@ function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateF
 
 		}
 		//!steal-remove-end
+	} else if (listenToObservable[offEmitSymbol]) {
+		listenToObservable[offEmitSymbol](updateFunction, queue);
 	}
 }
 
 // Given an observable, start listening to it and set up the mutation dependencies
 function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
-	if (listenToObservable[onValueSymbol]) {
-		canReflect.onValue(listenToObservable, updateFunction, queue);
+	var onValueOrOnEmitFn = getOnValueOrOnEmitFunctionFromObservable(listenToObservable);
+
+	if (onValueOrOnEmitFn) {
+		onValueOrOnEmitFn(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
 		if(process.env.NODE_ENV !== 'production') {
@@ -66,6 +74,34 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 		}
 
 		//!steal-remove-end
+	}
+}
+
+// Given an observable return a combined onValue|onEmit function wrapper
+function getOnValueOrOnEmitFunctionFromObservable (listenToObservable) {
+	// If we have either onValue or onEmit return a function to wrap them both
+	if (listenToObservable[onValueSymbol] || listenToObservable[onEmitSymbol]) {
+		return function (listenToObservable, updateFunction, queue) {
+			if (listenToObservable[onValueSymbol]) {
+				canReflect.onValue(listenToObservable, updateFunction, queue);
+			} else if (listenToObservable[onEmitSymbol]) {
+				listenToObservable[onEmitSymbol](updateFunction, queue);
+			}
+		};
+	}
+}
+
+// Given an observable return a combined offValue|offEmit function wrapper
+function getOffValueOrOffEmitFunctionFromObservable (listenToObservable) {
+	// If we have either offValue or offEmit return a function to wrap them both
+	if (listenToObservable[onValueSymbol] || listenToObservable[onEmitSymbol]) {
+		return function (listenToObservable, updateFunction, queue) {
+			if (listenToObservable[onValueSymbol]) {
+				canReflect.offValue(listenToObservable, updateFunction, queue);
+			} else if (listenToObservable[onEmitSymbol]) {
+				listenToObservable[offEmitSymbol](updateFunction, queue);
+			}
+		};
 	}
 }
 

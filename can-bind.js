@@ -16,6 +16,8 @@ if(process.env.NODE_ENV !== 'production') {
 var getChangesSymbol = canSymbol.for("can.getChangesDependencyRecord");
 var getValueSymbol = canSymbol.for("can.getValue");
 var onValueSymbol = canSymbol.for("can.onValue");
+var onEmitSymbol = canSymbol.for("can.onEmit");
+var offEmitSymbol = canSymbol.for("can.offEmit");
 var setValueSymbol = canSymbol.for("can.setValue");
 
 // Default implementations for setting the child and parent values
@@ -23,10 +25,29 @@ function defaultSetValue(newValue, observable) {
 	canReflect.setValue(observable, newValue);
 }
 
+// onEmit function
+function onEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[onEmitSymbol](updateFunction, queue);
+}
+
+// offEmit function
+function offEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[offEmitSymbol](updateFunction, queue);
+}
+
 // Given an observable, stop listening to it and tear down the mutation dependencies
 function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
+	var offValueOrOffEmitFn;
+
+	// Use either offValue or offEmit depending on which Symbols are on the `observable`
 	if (listenToObservable[onValueSymbol]) {
-		canReflect.offValue(listenToObservable, updateFunction, queue);
+		offValueOrOffEmitFn = canReflect.offValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		offValueOrOffEmitFn = offEmit;
+	}
+
+	if (offValueOrOffEmitFn) {
+		offValueOrOffEmitFn(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
 		if(process.env.NODE_ENV !== 'production') {
@@ -45,8 +66,17 @@ function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateF
 
 // Given an observable, start listening to it and set up the mutation dependencies
 function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
+	var onValueOrOnEmitFn;
+
+	// Use either onValue or onEmit depending on which Symbols are on the `observable`
 	if (listenToObservable[onValueSymbol]) {
-		canReflect.onValue(listenToObservable, updateFunction, queue);
+		onValueOrOnEmitFn = canReflect.onValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		onValueOrOnEmitFn = onEmit;
+	}
+
+	if (onValueOrOnEmitFn) {
+		onValueOrOnEmitFn(listenToObservable, updateFunction, queue);
 
 		//!steal-remove-start
 		if(process.env.NODE_ENV !== 'production') {

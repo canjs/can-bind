@@ -454,3 +454,52 @@ QUnit.test("setChild and setParent options", function(assert) {
 		"parent listener correctly turned off"
 	);
 });
+
+QUnit.test("use onEmit if observable has Symbol('can.onEmit')", function (assert) {
+	var child = new SimpleObservable(5);
+	var parent = new SimpleObservable(1);
+	var childOffEmitCalled = false;
+	var childOnEmitCalled = false;
+	var setParentWasCalled = false;
+	var childEmitFn = null;
+
+	canReflect.assignSymbols(child, {
+		"can.onEmit": function (updateFn) {
+			childOnEmitCalled = true;
+			childEmitFn = updateFn;
+		},
+		"can.offEmit": function () {
+			childOffEmitCalled = true;
+		},
+		"can.onValue": null
+	});
+
+	var binding = new Bind({
+		child: child,
+		parent: parent,
+		onInitDoNotUpdateParent: true,
+		childToParent: true,
+		parentToChild: false,
+		setParent: function(newValue) {
+			setParentWasCalled = true;
+			parent.set(newValue);
+		}
+	});
+
+	// When the binding is turned on, the parent's value should not be set
+	binding.start();
+
+	assert.equal(canReflect.getValue(parent), 1, "has correct initial value");
+	
+	// Emit a changed value
+	childEmitFn(5);
+	
+	assert.equal(canReflect.getValue(parent), 5, "has emitted value");
+	assert.equal(childOnEmitCalled, true, "onEmit was fired");
+	assert.equal(setParentWasCalled, true, "parent was updated");
+
+	// Turn off the listeners
+	binding.stop();
+
+	assert.equal(childOffEmitCalled, true, "offEmit was fired");
+});

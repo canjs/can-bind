@@ -25,9 +25,26 @@ function defaultSetValue(newValue, observable) {
 	canReflect.setValue(observable, newValue);
 }
 
+// onEmit function
+function onEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[onEmitSymbol](updateFunction, queue);
+}
+
+// offEmit function
+function offEmit (listenToObservable, updateFunction, queue) {
+	return listenToObservable[offEmitSymbol](updateFunction, queue);
+}
+
 // Given an observable, stop listening to it and tear down the mutation dependencies
 function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
-	var offValueOrOffEmitFn = getOffValueOrOffEmitFunctionFromObservable(listenToObservable);
+	var offValueOrOffEmitFn;
+
+	// Use either offValue or offEmit depending on which Symbols are on the `observable`
+	if (listenToObservable[onValueSymbol]) {
+		offValueOrOffEmitFn = canReflect.offValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		offValueOrOffEmitFn = offEmit;
+	}
 
 	if (offValueOrOffEmitFn) {
 		offValueOrOffEmitFn(listenToObservable, updateFunction, queue);
@@ -44,14 +61,19 @@ function turnOffListeningAndUpdate(listenToObservable, updateObservable, updateF
 
 		}
 		//!steal-remove-end
-	} else if (listenToObservable[offEmitSymbol]) {
-		listenToObservable[offEmitSymbol](updateFunction, queue);
 	}
 }
 
 // Given an observable, start listening to it and set up the mutation dependencies
 function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFunction, queue) {
-	var onValueOrOnEmitFn = getOnValueOrOnEmitFunctionFromObservable(listenToObservable);
+	var onValueOrOnEmitFn;
+
+	// Use either onValue or onEmit depending on which Symbols are on the `observable`
+	if (listenToObservable[onValueSymbol]) {
+		onValueOrOnEmitFn = canReflect.onValue;
+	} else if (listenToObservable[onEmitSymbol]) {
+		onValueOrOnEmitFn = onEmit;
+	}
 
 	if (onValueOrOnEmitFn) {
 		onValueOrOnEmitFn(listenToObservable, updateFunction, queue);
@@ -74,34 +96,6 @@ function turnOnListeningAndUpdate(listenToObservable, updateObservable, updateFu
 		}
 
 		//!steal-remove-end
-	}
-}
-
-// onEmit function
-function onEmit (listenToObservable, updateFunction, queue) {
-	return listenToObservable[onEmitSymbol](updateFunction, queue);
-}
-
-// offEmit function
-function offEmit (listenToObservable, updateFunction, queue) {
-	return listenToObservable[offEmitSymbol](updateFunction, queue);
-}
-
-// Given an observable return a combined onValue|onEmit function wrapper
-function getOnValueOrOnEmitFunctionFromObservable (listenToObservable) {
-	if (listenToObservable[onValueSymbol]) {
-		return canReflect.onValue;
-	} else if (listenToObservable[onEmitSymbol]) {
-		return onEmit;
-	}
-}
-
-// Given an observable return a combined offValue|offEmit function wrapper
-function getOffValueOrOffEmitFunctionFromObservable (listenToObservable) {
-	if (listenToObservable[onValueSymbol]) {
-		return canReflect.offValue;
-	} else if (listenToObservable[onEmitSymbol]) {
-		return offEmit;
 	}
 }
 

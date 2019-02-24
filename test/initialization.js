@@ -453,6 +453,6 @@ QUnit.test("parent and child properties", function(assert) {
 		parent: parent
 	});
 
-	QUnit.equal(binding.child, child, "child");
-	QUnit.equal(binding.parent, parent, "child");
+	assert.equal(binding.child, child, "child");
+	assert.equal(binding.parent, parent, "child");
 });

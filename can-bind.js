@@ -436,6 +436,16 @@ canAssign(Bind.prototype, {
 
 });
 
+["parent", "child"].forEach(function(property){
+	Object.defineProperty(Bind.prototype, property, {
+		get: function(){
+			return this._options[property];
+		}
+	});
+});
+
+
+
 // updateValue is a helper function that’s used by updateChild and updateParent
 function updateValue(args) {
 	/* jshint validthis: true */

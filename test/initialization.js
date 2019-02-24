@@ -437,3 +437,22 @@ QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChil
 		expectedParent: 3
 	});
 });
+
+QUnit.test("parent and child properties", function(assert) {
+	var child = new SimpleObservable(undefined);
+	var parentSetterWasCalled = false;
+	var parent = new SimpleObservable(15);
+	canReflect.assignSymbols(parent, {
+		"can.setValue": function() {
+			parentSetterWasCalled = true;
+		}
+	});
+
+	var binding = new Bind({
+		child: child,
+		parent: parent
+	});
+
+	QUnit.equal(binding.child, child, "child");
+	QUnit.equal(binding.parent, parent, "child");
+});

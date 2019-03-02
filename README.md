@@ -5,8 +5,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/canjs/can-bind/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/can-bind.svg)](https://www.npmjs.com/package/can-bind)
 [![Travis build status](https://travis-ci.org/canjs/can-bind.svg?branch=master)](https://travis-ci.org/canjs/can-bind)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/canjs/can-bind?branch=master&svg=true)](https://ci.appveyor.com/project/matthewp/can-bind)
-[![Coverage status](https://coveralls.io/repos/github/canjs/can-bind/badge.svg?branch=master)](https://coveralls.io/github/canjs/can-bind?branch=master)
 [![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-bind.svg)](https://greenkeeper.io/)
 
 Bind different CanJS observables together.

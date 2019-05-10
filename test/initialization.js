@@ -64,7 +64,7 @@ QUnit.test("undefined parent and null child with setter", function(assert) {
 	binding.stop();
 });
 
-function initializationTest(options) {
+function initializationTest(options, assert) {
 
 	// Create the binding
 	var child = new SimpleObservable(options.startingChild);
@@ -83,12 +83,12 @@ function initializationTest(options) {
 	binding.start();
 
 	// Check the expected values
-	QUnit.equal(
+	assert.equal(
 		canReflect.getValue(child),
 		options.expectedChild,
 		"child value is correct"
 	);
-	QUnit.equal(
+	assert.equal(
 		canReflect.getValue(parent),
 		options.expectedParent,
 		"parent value is correct"
@@ -98,7 +98,7 @@ function initializationTest(options) {
 	binding.stop();
 }
 
-QUnit.test("child=1  <->  parent=2  =>  child=2  parent=2", function() {
+QUnit.test("child=1  <->  parent=2  =>  child=2  parent=2", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: 2,
@@ -108,10 +108,10 @@ QUnit.test("child=1  <->  parent=2  =>  child=2  parent=2", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 2,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <->  parent=undefined  =>  child=1  parent=1", function() {
+QUnit.test("child=1  <->  parent=undefined  =>  child=1  parent=1", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -121,10 +121,10 @@ QUnit.test("child=1  <->  parent=undefined  =>  child=1  parent=1", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 1
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <->  parent=2  =>  child=2  parent=2", function() {
+QUnit.test("child=undefined  <->  parent=2  =>  child=2  parent=2", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: 2,
@@ -134,10 +134,10 @@ QUnit.test("child=undefined  <->  parent=2  =>  child=2  parent=2", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 2,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <->  parent=undefined  =>  child=undefined  parent=undefined", function() {
+QUnit.test("child=undefined  <->  parent=undefined  =>  child=undefined  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: undefined,
@@ -147,10 +147,10 @@ QUnit.test("child=undefined  <->  parent=undefined  =>  child=undefined  parent=
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=3  <->  parent=3  =>  child=3  parent=3", function() {
+QUnit.test("child=3  <->  parent=3  =>  child=3  parent=3", function(assert) {
 	initializationTest({
 		startingChild: 3,
 		startingParent: 3,
@@ -160,10 +160,10 @@ QUnit.test("child=3  <->  parent=3  =>  child=3  parent=3", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 3,
 		expectedParent: 3
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  ->  parent=2  =>  child=1  parent=1", function() {
+QUnit.test("child=1  ->  parent=2  =>  child=1  parent=1", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: 2,
@@ -173,10 +173,10 @@ QUnit.test("child=1  ->  parent=2  =>  child=1  parent=1", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 1
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=1", function() {
+QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=1", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -187,10 +187,10 @@ QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=1", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 1
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=undefined", function() {
+QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -201,10 +201,10 @@ QUnit.test("child=1  ->  parent=undefined  =>  child=1  parent=undefined", funct
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  ->  parent=2  =>  child=undefined  parent=undefined", function() {
+QUnit.test("child=undefined  ->  parent=2  =>  child=undefined  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: 2,
@@ -214,10 +214,10 @@ QUnit.test("child=undefined  ->  parent=2  =>  child=undefined  parent=undefined
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  ->  parent=undefined  =>  child=undefined  parent=undefined", function() {
+QUnit.test("child=undefined  ->  parent=undefined  =>  child=undefined  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: undefined,
@@ -227,10 +227,10 @@ QUnit.test("child=undefined  ->  parent=undefined  =>  child=undefined  parent=u
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=3  ->  parent=3  =>  child=3  parent=3", function() {
+QUnit.test("child=3  ->  parent=3  =>  child=3  parent=3", function(assert) {
 	initializationTest({
 		startingChild: 3,
 		startingParent: 3,
@@ -240,10 +240,10 @@ QUnit.test("child=3  ->  parent=3  =>  child=3  parent=3", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 3,
 		expectedParent: 3
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-  parent=2  =>  child=2  parent=2", function() {
+QUnit.test("child=1  <-  parent=2  =>  child=2  parent=2", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: 2,
@@ -253,10 +253,10 @@ QUnit.test("child=1  <-  parent=2  =>  child=2  parent=2", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 2,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-  parent=undefined  =>  child=undefined  parent=undefined", function() {
+QUnit.test("child=1  <-  parent=undefined  =>  child=undefined  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -266,10 +266,10 @@ QUnit.test("child=1  <-  parent=undefined  =>  child=undefined  parent=undefined
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-  parent=2  =>  child=2  parent=2", function() {
+QUnit.test("child=undefined  <-  parent=2  =>  child=2  parent=2", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: 2,
@@ -279,10 +279,10 @@ QUnit.test("child=undefined  <-  parent=2  =>  child=2  parent=2", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 2,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=undefined", function() {
+QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=undefined", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: undefined,
@@ -292,10 +292,10 @@ QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=u
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3", function() {
+QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3", function(assert) {
 	initializationTest({
 		startingChild: 3,
 		startingParent: 3,
@@ -305,10 +305,10 @@ QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3", function() {
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 3,
 		expectedParent: 3
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-> parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=1  <-> parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: 2,
@@ -318,10 +318,10 @@ QUnit.test("child=1  <-> parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChil
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-> parent=undefined  =>  child=1  parent=1  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=1  <-> parent=undefined  =>  child=1  parent=1  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -331,10 +331,10 @@ QUnit.test("child=1  <-> parent=undefined  =>  child=1  parent=1  [onInitDoNotUp
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 1
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-> parent=2  =>  child=undefined  parent=2  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=undefined  <-> parent=2  =>  child=undefined  parent=2  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: 2,
@@ -344,10 +344,10 @@ QUnit.test("child=undefined  <-> parent=2  =>  child=undefined  parent=2  [onIni
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-> parent=undefined  =>  child=undefined  parent=undefined  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=undefined  <-> parent=undefined  =>  child=undefined  parent=undefined  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: undefined,
@@ -357,10 +357,10 @@ QUnit.test("child=undefined  <-> parent=undefined  =>  child=undefined  parent=u
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=3  <-> parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=3  <-> parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 3,
 		startingParent: 3,
@@ -370,10 +370,10 @@ QUnit.test("child=3  <-> parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChil
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 3,
 		expectedParent: 3
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-  parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=1  <-  parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: 2,
@@ -383,10 +383,10 @@ QUnit.test("child=1  <-  parent=2  =>  child=1  parent=2  [onInitDoNotUpdateChil
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=1  <-  parent=undefined  =>  child=1  parent=undefined  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=1  <-  parent=undefined  =>  child=1  parent=undefined  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 1,
 		startingParent: undefined,
@@ -396,10 +396,10 @@ QUnit.test("child=1  <-  parent=undefined  =>  child=1  parent=undefined  [onIni
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 1,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-  parent=2  =>  child=undefined  parent=2  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=undefined  <-  parent=2  =>  child=undefined  parent=2  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: 2,
@@ -409,10 +409,10 @@ QUnit.test("child=undefined  <-  parent=2  =>  child=undefined  parent=2  [onIni
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: 2
-	});
+	}, assert);
 });
 
-QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=undefined  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=undefined  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: undefined,
 		startingParent: undefined,
@@ -422,10 +422,10 @@ QUnit.test("child=undefined  <-  parent=undefined  =>  child=undefined  parent=u
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: undefined,
 		expectedParent: undefined
-	});
+	}, assert);
 });
 
-QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChild=true]", function() {
+QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChild=true]", function(assert) {
 	initializationTest({
 		startingChild: 3,
 		startingParent: 3,
@@ -435,7 +435,7 @@ QUnit.test("child=3  <-  parent=3  =>  child=3  parent=3  [onInitDoNotUpdateChil
 		onInitSetUndefinedParentIfChildIsDefined: true,
 		expectedChild: 3,
 		expectedParent: 3
-	});
+	}, assert);
 });
 
 QUnit.test("parent and child properties", function(assert) {

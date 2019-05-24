@@ -43,7 +43,7 @@ QUnit.test("two-way binding with childSticksToParent", function(assert) {
 	binding.stop();
 });
 
-function cycleStickyTest(options) {
+function cycleStickyTest(options, assert) {
 	var child = options.child;
 	var cycles = options.cycles;
 	var expectedChild = options.expectedChild;
@@ -73,12 +73,12 @@ function cycleStickyTest(options) {
 	}
 
 	// Check the expected values
-	QUnit.equal(
+	assert.equal(
 		canReflect.getValue(parent),
 		expectedParent,
 		"parent updates"
 	);
-	QUnit.equal(
+	assert.equal(
 		canReflect.getValue(child),
 		expectedChild,
 		"child updates"
@@ -88,7 +88,7 @@ function cycleStickyTest(options) {
 	binding.stop();
 }
 
-QUnit.test("cyclical two-way binding - 0 cycles not sticky", function() {
+QUnit.test("cyclical two-way binding - 0 cycles not sticky", function(assert) {
 	cycleStickyTest({
 
 		// Parent observable adds 1 to whatever value it’s set to
@@ -112,10 +112,10 @@ QUnit.test("cyclical two-way binding - 0 cycles not sticky", function() {
 		// parent sets child to 2, child changes its own value to 3
 		expectedChild: 3
 
-	});
+	}, assert);
 });
 
-canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky - warning in dev", function() {
+canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky - warning in dev", function(assert) {
 
 	// Note that the actual warning shown in the console will be formatted nicely;
 	// the “3” is the new value and the “2” is the parent’s current value
@@ -142,14 +142,14 @@ canTestHelpers.dev.devOnlyTest("cyclical two-way binding - 0 cycles not sticky -
 		startBySetting: "parent",
 		expectedParent: 2,
 		expectedChild: 3
-	});
+	}, assert);
 
-	QUnit.equal(teardown(), 1, "warning shown");
+	assert.equal(teardown(), 1, "warning shown");
 
 
 });
 
-QUnit.test("cyclical two-way binding - 1 cycle not sticky", function() {
+QUnit.test("cyclical two-way binding - 1 cycle not sticky", function(assert) {
 	cycleStickyTest({
 
 		// Parent observable adds 1 to whatever value it’s set to
@@ -177,10 +177,10 @@ QUnit.test("cyclical two-way binding - 1 cycle not sticky", function() {
 		// parent sets child to 4, child changes its own value to 5
 		expectedChild: 5
 
-	});
+	}, assert);
 });
 
-QUnit.test("cyclical two-way binding - 2 cycles not sticky", function() {
+QUnit.test("cyclical two-way binding - 2 cycles not sticky", function(assert) {
 	cycleStickyTest({
 
 		// Parent observable adds 1 to whatever value it’s set to
@@ -211,11 +211,11 @@ QUnit.test("cyclical two-way binding - 2 cycles not sticky", function() {
 		// parent sets child to 6, child changes its own value to 7
 		expectedChild: 7
 
-	});
+	}, assert);
 });
 
 // This test matches how can-stache-bindings is configured
-QUnit.test("two-way binding - 0 cycles childSticksToParent", function() {
+QUnit.test("two-way binding - 0 cycles childSticksToParent", function(assert) {
 	cycleStickyTest({
 
 		// Parent observable adds 1 to whatever value it’s set to
@@ -241,5 +241,5 @@ QUnit.test("two-way binding - 0 cycles childSticksToParent", function() {
 		// childSticksToParent dictates that child should be set to 2
 		expectedChild: 2
 
-	});
+	}, assert);
 });

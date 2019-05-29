@@ -243,3 +243,32 @@ QUnit.test("two-way binding - 0 cycles childSticksToParent", function(assert) {
 
 	}, assert);
 });
+
+canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding child-side", function(assert) {
+	assert.expect(4);
+	var teardown = canTestHelpers.dev.willWarn(
+		"can-bind: The child of the sticky two-way binding Test Child Observable is changing or converting its value when set. " +
+			"Conversions should only be done on the binding parent to preserve synchronization. " +
+			"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings",
+		function(text, match) {
+			if(match) {
+				assert.ok(true, "Correct warning generated");
+			}
+		}
+	);
+
+	var parent = new SimpleObservable(1);
+	var child = new SettableObservable(helpers.protectAgainstInfiniteLoops(function() { return 0; }), 0);
+	canReflect.setName(child.observation.func, "Test Child Observable");
+
+	cycleStickyTest({
+		parent: parent,
+		child: child,
+		startBySetting: "parent",
+		sticky: "childSticksToParent",
+		expectedParent: 1,
+		expectedChild: 0
+	}, assert);
+
+	assert.equal(teardown(), 1, "Warning generated only once");
+});

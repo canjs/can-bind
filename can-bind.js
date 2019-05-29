@@ -380,6 +380,25 @@ canAssign(Bind.prototype, {
 				}
 			}
 
+			//!steal-remove-start
+			if(process.env.NODE_ENV !== 'production'){
+				// Here we want to do a dev-mode check to see whether the child does type conversions on
+				//  any two-way bindings.  This will be ignored and the child and parent will be desynched.
+				var childContext = options.child.observation && options.child.observation.func || options.child;
+				parentValue = canReflect.getValue(options.parent);
+				childValue = canReflect.getValue(options.child);
+				if (parentValue != null && childValue !== parentValue) {
+					canLog.warn(
+						"can-bind: The child of the sticky two-way binding " +
+						canReflect.getName(childContext) +
+						" is changing or converting its value when set. " +
+						"Conversions should only be done on the binding parent to preserve synchronization. " +
+						"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings"
+					);
+				}
+			}
+			//!steal-remove-end
+
 		} else if (this._childToParent === true) {
 			// One-way child -> parent, so update the parent
 			// Check if we are to initialize the parent

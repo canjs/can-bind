@@ -50,7 +50,7 @@ function cycleStickyTest(options, assert) {
 	var expectedParent = options.expectedParent;
 	var parent = options.parent;
 	var sticky = options.sticky;
-	var shortName = options.shortName;
+	var debugName = options.debugName;
 
 	// Create the binding
 	var binding = new Bind({
@@ -59,7 +59,7 @@ function cycleStickyTest(options, assert) {
 		onInitDoNotUpdateChild: true,
 		parent: parent,
 		sticky: sticky,
-		shortName: shortName
+		debugName: debugName
 	});
 
 	// Turn on the listeners
@@ -293,7 +293,7 @@ canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding
 		sticky: "childSticksToParent",
 		expectedParent: 1,
 		expectedChild: 0,
-		shortName: shortName
+		debugName: shortName
 	}, assert);
 
 	assert.equal(teardown(), 1, "Warning generated only once");

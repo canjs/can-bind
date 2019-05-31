@@ -393,7 +393,7 @@ canAssign(Bind.prototype, {
 						"can-bind: The " +
 						(options.sticky === "parentSticksToChild" ? "parent" : "child") +
 						" of the sticky two-way binding " +
-						(options.shortName || (canReflect.getName(parentContext) + "<->" + canReflect.getName(childContext))) +
+						(options.debugName || (canReflect.getName(parentContext) + "<->" + canReflect.getName(childContext))) +
 						" is changing or converting its value when set. Conversions should only be done on the binding " +
 						(options.sticky === "parentSticksToChild" ? "child" : "parent") +
 						" to preserve synchronization. " +

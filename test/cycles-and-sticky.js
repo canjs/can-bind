@@ -50,6 +50,7 @@ function cycleStickyTest(options, assert) {
 	var expectedParent = options.expectedParent;
 	var parent = options.parent;
 	var sticky = options.sticky;
+	var shortName = options.shortName;
 
 	// Create the binding
 	var binding = new Bind({
@@ -57,7 +58,8 @@ function cycleStickyTest(options, assert) {
 		cycles: cycles,
 		onInitDoNotUpdateChild: true,
 		parent: parent,
-		sticky: sticky
+		sticky: sticky,
+		shortName: shortName
 	});
 
 	// Turn on the listeners
@@ -245,9 +247,9 @@ QUnit.test("two-way binding - 0 cycles childSticksToParent", function(assert) {
 });
 
 canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding child-side", function(assert) {
-	assert.expect(4);
+	assert.expect(8);
 	var teardown = canTestHelpers.dev.willWarn(
-		"can-bind: The child of the sticky two-way binding Test Child Observable is changing or converting its value when set. " +
+		"can-bind: The child of the sticky two-way binding SimpleObservable<1><->Test Child Observable is changing or converting its value when set. " +
 			"Conversions should only be done on the binding parent to preserve synchronization. " +
 			"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings",
 		function(text, match) {
@@ -268,6 +270,30 @@ canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding
 		sticky: "childSticksToParent",
 		expectedParent: 1,
 		expectedChild: 0
+	}, assert);
+
+	assert.equal(teardown(), 1, "Warning generated only once");
+
+	// also test with a short name given to the binding
+	var shortName = "The test binding";
+	teardown = canTestHelpers.dev.willWarn(
+		"can-bind: The child of the sticky two-way binding The test binding is changing or converting its value when set. " +
+			"Conversions should only be done on the binding parent to preserve synchronization. " +
+			"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings",
+		function(text, match) {
+			if(match) {
+				assert.ok(true, "Correct warning generated");
+			}
+		}
+	);
+	cycleStickyTest({
+		parent: parent,
+		child: child,
+		startBySetting: "parent",
+		sticky: "childSticksToParent",
+		expectedParent: 1,
+		expectedChild: 0,
+		shortName: shortName
 	}, assert);
 
 	assert.equal(teardown(), 1, "Warning generated only once");

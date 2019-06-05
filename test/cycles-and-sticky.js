@@ -248,11 +248,9 @@ QUnit.test("two-way binding - 0 cycles childSticksToParent", function(assert) {
 
 canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding child-side", function(assert) {
 	assert.expect(8);
-	var teardown = canTestHelpers.dev.willWarn(
-		"can-bind: The child of the sticky two-way binding SimpleObservable<1><->Test Child Observable is changing or converting its value when set. " +
-			"Conversions should only be done on the binding parent to preserve synchronization. " +
-			"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings",
-		function(text, match) {
+	var msg = /.* changing or converting its value when set.*/;
+
+	var teardown = canTestHelpers.dev.willWarn(msg, function(text, match) {
 			if(match) {
 				assert.ok(true, "Correct warning generated");
 			}
@@ -276,11 +274,7 @@ canTestHelpers.dev.devOnlyTest("warn when changing the value of a sticky binding
 
 	// also test with a short name given to the binding
 	var shortName = "The test binding";
-	teardown = canTestHelpers.dev.willWarn(
-		"can-bind: The child of the sticky two-way binding The test binding is changing or converting its value when set. " +
-			"Conversions should only be done on the binding parent to preserve synchronization. " +
-			"See https://canjs.com/doc/can-stache-bindings.html#StickyBindings for more about sticky bindings",
-		function(text, match) {
+	teardown = canTestHelpers.dev.willWarn(msg, function(text, match) {
 			if(match) {
 				assert.ok(true, "Correct warning generated");
 			}

@@ -8,6 +8,7 @@ var QUnit = require("steal-qunit");
 var SettableObservable = require("can-simple-observable/settable/settable");
 var SimpleMap = require("can-simple-map");
 var SimpleObservable = require("can-simple-observable");
+var queues = require("can-queues");
 
 QUnit.module("can-bind core",helpers.moduleHooks);
 
@@ -490,10 +491,10 @@ QUnit.test("use onEmit if observable has Symbol('can.onEmit')", function (assert
 	binding.start();
 
 	assert.equal(canReflect.getValue(parent), 1, "has correct initial value");
-	
+
 	// Emit a changed value
 	childEmitFn(5);
-	
+
 	assert.equal(canReflect.getValue(parent), 5, "has emitted value");
 	assert.equal(childOnEmitCalled, true, "onEmit was fired");
 	assert.equal(setParentWasCalled, true, "parent was updated");
@@ -503,3 +504,24 @@ QUnit.test("use onEmit if observable has Symbol('can.onEmit')", function (assert
 
 	assert.equal(childOffEmitCalled, true, "offEmit was fired");
 });
+
+if(queues.domQueue) {
+	QUnit.test("able to queue changes in dom queue", function(assert){
+		var child = new SimpleObservable(5);
+		var parent = new SimpleObservable(1);
+
+		var element = document.createElement("div");
+
+
+		var binding = new Bind({
+			child: child,
+			parent: parent,
+			element: element,
+			queue: "dom"
+		});
+
+		binding.start();
+
+		assert.equal(child.value, 1, "updated child");
+	});
+}

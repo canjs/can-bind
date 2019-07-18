@@ -19,6 +19,7 @@ var onValueSymbol = canSymbol.for("can.onValue");
 var onEmitSymbol = canSymbol.for("can.onEmit");
 var offEmitSymbol = canSymbol.for("can.offEmit");
 var setValueSymbol = canSymbol.for("can.setValue");
+var canElementSymbol = canSymbol.for("can.element");
 
 // Default implementations for setting the child and parent values
 function defaultSetValue(newValue, observable) {
@@ -144,15 +145,20 @@ function Bind(options) {
 		if (options.parent === undefined) {
 			throw new TypeError("You must supply a parent");
 		}
-		if (options.queue && ["notify", "derive", "domUI"].indexOf(options.queue) === -1) {
-			throw new RangeError("Invalid queue; must be one of notify, derive, or domUI");
+		if (options.queue && ["notify", "derive", "domUI","dom"].indexOf(options.queue) === -1) {
+			throw new RangeError("Invalid queue; must be one of notify, derive, dom, or domUI");
 		}
 	}
 	//!steal-remove-end
 
 	// queue; by default, domUI
 	if (options.queue === undefined) {
-		options.queue = "domUI";
+		if(options.element) {
+			options.queue = "dom";
+		} else {
+			options.queue = "domUI";
+		}
+
 	}
 
 	// cycles: when an observable is set in a two-way binding, it can update the
@@ -320,6 +326,10 @@ function Bind(options) {
 			partnerSemaphore: childSemaphore
 		});
 	}.bind(this);
+
+	if(options.element) {
+		this._updateChild[canElementSymbol] = this._updateParent[canElementSymbol] = options.element;
+	}
 
 	//!steal-remove-start
 	if(process.env.NODE_ENV !== 'production') {

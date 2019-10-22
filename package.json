@@ -50,7 +50,7 @@
     "can-test-helpers": "^1.1.2",
     "can-value": "<2.0.0",
     "jshint": "^2.9.1",
-    "steal": "^2.0.0",
+    "steal": "^2.2.4",
     "steal-qunit": "^2.0.0",
     "steal-tools": "^2.0.0",
     "testee": "^0.9.0"
